@@ -129,7 +129,7 @@ function updateCountdown() {
 
     const countdownHtml = `
       <div class="countdown-text">
-        Reunion Date: ${targetDate.toLocaleString('en-GB', { timeZone: 'Europe/Zurich' })}
+        ${targetDate.toLocaleString('en-GB', { timeZone: 'Europe/Zurich' })}
       </div>
       <div class="countdown-row">
         <div class="countdown-block">${formattedDays}</div>

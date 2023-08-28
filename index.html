@@ -3,115 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Class of 1998 Reunion</title>
+<title>Συνάντηση Τάξης 1998</title>
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
   <header id="banner">
-    <h1>Class of 1998 Reunion</h1>
+    <h1>Συνάντηση Αποφοίτων 1998</h1>
+	<h3>1ο & 2ο Γυμνάσιο Αμφισσας</h3>
     <nav>
-	  <a href="#countdown">Countdown</a>
-      <a href="#participants">Participants</a>
-      <a href="#register">Register</a>
-	  <a href="#location">Location</a>
-	  <a href="#photos">Photos</a>
+      <a href="#countdown">Αντίστροφη Μέτρηση</a>
+      <a href="#participants">Συμμετέχοντες</a>
+      <a href="#register">Εγγραφή</a>
+      <a href="#location">Τοποθεσία</a>
+      <a href="#photos">Φωτογραφίες</a>
     </nav>
   </header>
-  
+
   <section id="description">
     <div class="description-content">
       <div class="logo">
-        <img src="assets/images/logo.jpg" alt="Logo">
+        <img src="assets/images/logo.jpg" alt="Λογότυπο">
       </div>
       <div class="text">
-        <p>Welcome to the Class of 1998 Reunion! Join us for a day of memories, reconnecting with old friends, and celebrating our time together at Amfissa High School.</p>
+        <p>Καλώς ήρθατε στη Συνάντηση της Τάξης του 1998! Ελάτε να ανασύρουμε αναμνήσεις, να ξανασυνδεθούμε με παλιούς φίλους και να γιορτάσουμε τα 25 χρόνια απο την αποφοίτηση απο το Γυμνάσιο Αμφίσσης.</p>
       </div>
     </div>
   </section>
-  
+
   <section id="countdown">
-	<input type="hidden" id="targetDatetime" value="2023-09-23T19:00:00">
-    <h2>Countdown</h2>
+    <input type="hidden" id="targetDatetime" value="2023-09-23T19:00:00">
+    <h2>Αντίστροφη Μέτρηση</h2>
     <div id="countdownTimer"></div>
   </section>
 
   <section id="participants">
-    <h2>Participant List</h2>
-    <input type="text" id="search" placeholder="Search...">
+    <h2>Λίστα Συμμετεχόντων</h2>
+    <input type="text" id="search" placeholder="Αναζήτηση...">
     <ul id="participantList">
-      <!-- Participant list will be populated dynamically using JavaScript -->
+      <!-- Η λίστα των συμμετεχόντων θα γίνει δυναμική μέσω JavaScript -->
     </ul>
   </section>
-  
+
   <section id="participant-details">
-	  <div class="participant-details-container">
-		<!-- Participant details will be added here -->
-	  </div>
+    <div class="participant-details-container">
+      <!-- Οι λεπτομέρειες του συμμετέχοντος θα προστεθούν εδώ -->
+    </div>
   </section>
 
-
   <section id="register">
-    <h2>Participant Registration</h2>
+    <h2>Εγγραφή Συμμετέχοντος</h2>
     <form id="registrationForm">
       <div class="form-row">
-        <label for="firstName">* First Name:</label>
+        <label for="firstName">* Όνομα:</label>
         <input type="text" id="firstName" name="firstName" required>
       </div>
       <div class="form-row">
-        <label for="lastName">* Last Name:</label>
+        <label for="lastName">* Επώνυμο:</label>
         <input type="text" id="lastName" name="lastName" required>
       </div>
       <div class="form-row">
         <label for="email">Email:</label>
         <input type="email" id="email" name="email">
       </div>
-	  <div class="form-row">
-        <label for="password">Password:</label>
+      <div class="form-row">
+        <label for="password">Κωδικός:</label>
         <input type="password" id="pwd" name="pwd">
       </div>
-	  <div class="form-row">
-		<label>* Attendance:</label>
-			<input type="radio" name="attendance" value="Yes" required> Yes
-			<input type="radio" name="attendance" value="No" required> No
-	  </div>
       <div class="form-row">
-        <label for="profilePhoto">Profile Photo (1998):</label>
+        <label>* Παρουσία?:</label>
+        <input type="radio" name="attendance" value="Yes" required> Ναι
+        <input type="radio" name="attendance" value="No" required> Όχι
+      </div>
+      <div class="form-row">
+        <label for="profilePhoto">Φωτογραφία Προφίλ (1998):</label>
         <input type="file" id="profilePhoto1998" name="profilePhoto1998" accept="image/*">
       </div>
-	  <div class="form-row">
-        <label for="profilePhoto">* Profile Photo (2023):</label>
+      <div class="form-row">
+        <label for="profilePhoto">* Φωτογραφία Προφίλ (2023):</label>
         <input type="file" id="profilePhoto2023" name="profilePhoto2023" accept="image/*" required>
       </div>
-      <button type="submit">Register</button>
-	  <input type="hidden" id="dummy" name="dummy">
+      <button type="submit">Εγγραφή</button>
+      <input type="hidden" id="dummy" name="dummy">
     </form>
   </section>
-  
+
   <section id="location">
-    <h2>Event Location</h2>
-    <div id="map"></div>
-	<iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyADx5g_uSBAhnVuAs77LQSBbpV6vG6dNxk&amp;q=16%20Gidogiannou%2C%20Amfissa%2C%20GR%2C%20331%2000" width="400" height="300" frameborder="0" style="border:0" class="embed-responsive-item" allowfullscreen="">
+    <h2>Τοποθεσία Εκδήλωσης</h2>
+    <iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyADx5g_uSBAhnVuAs77LQSBbpV6vG6dNxk&amp;q=16%20Gidogiannou%2C%20Amfissa%2C%20GR%2C%20331%2000" width="400" height="300" frameborder="0" style="border:0" class="embed-responsive-item" allowfullscreen="">
 	</iframe>
   </section>
-  
+
   <section id="photos">
-	  <h2>Photos</h2>
-	  <div class="photo-container">
-		<img id="current-photo" src="" alt="Photo">
-	  </div>
-	  <div class="photo-navigation">
-		<button id="prev-photo-btn">Previous</button>
-		<button id="next-photo-btn">Next</button>
-		
-		<form id="uploadPhotoForm">
-			<button id="upload-photo-btn">Upload</button>
-			<input type="file" id="genericphoto" name="photo" accept="image/*">
-		</form>
-	  </div>
+    <h2>Φωτογραφίες</h2>
+    <div class="photo-container">
+      <img id="current-photo" src="" alt="Φωτογραφία">
+    </div>
+    <div class="photo-navigation">
+      <button id="prev-photo-btn">Προηγούμενη</button>
+      <button id="next-photo-btn">Επόμενη</button>
+
+      <form id="uploadPhotoForm">
+        <button id="upload-photo-btn">Ανέβασμα</button>
+        <input type="file" id="genericphoto" name="photo" accept="image/*">
+      </form>
+    </div>
   </section>
 
   <footer>
-    <p>&copy; 2023 Class of 1998 Reunion</p>
+    <p>&copy; 2023 nikgioulos@yahoo.gr</p>
   </footer>
 
   <script src="assets/script.js"></script>

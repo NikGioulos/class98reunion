@@ -6,6 +6,16 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const multer = require('multer'); // for handling file uploads
 
+const AWS = require("aws-sdk");
+const s3 = new AWS.S3();
+const multerS3 = require('multer-s3');
+//aws.config.update({
+//    secretAccessKey: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+//    accessKeyId: 'XXXXXXXXXXXXXXX',
+//    region: 'us-east-1'
+//});
+
+
 const app = express();
 const port = 3000; // You can change this to your desired port
 
@@ -27,21 +37,6 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const { firstName, lastName} = req.body;
     const participantDir = path.join(__dirname, 'uploads', `${lastName}_${firstName}`);
-	const participantDir2 = path.join(__dirname, 'uploads');
-	
-	console.log(`enter destination`);
-	
-	fs.accessSync(participantDir2, fs.constants.W_OK, (err) => {
-	  if (err) {
-		console.log(`No write access to ${participantDir2}`);
-	  } else {
-		console.log(`Write access to ${participantDir2} is available`);
-	  }
-	});
-	
-	console.log(`enter destination2`);
-	
-	
 	if (!fs.existsSync(participantDir)){
 		fs.mkdirSync(participantDir, { recursive: true });
 	}
@@ -53,7 +48,21 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ 
-	storage: storage,
+	storage: multerS3({
+        s3: s3,
+        acl: 'public-read',
+        bucket: 'cyclic-good-bee-underclothes-us-east-2',
+        key: function (req, file, cb) {
+			console.log(file);
+			const { firstName, lastName} = req.body;
+			const participantDir = path.join(__dirname, 'uploads', `${lastName}_${firstName}`);
+			if (!fs.existsSync(participantDir)){
+				fs.mkdirSync(participantDir, { recursive: true });
+			}
+			cb(null, participantDir);
+            cb(null, `${file.fieldname}.jpg`); //use Date.now() for unique file keys
+        }
+    }),
 	limits: {
 		fileSize: 5 * 1024 * 1024, // 5 MB (adjust the size as needed)
 	},

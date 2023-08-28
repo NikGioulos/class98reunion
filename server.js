@@ -14,6 +14,7 @@ const multerS3 = require('multer-s3');
 //    accessKeyId: 'XXXXXXXXXXXXXXX',
 //    region: 'us-east-1'
 //});
+const S3_BUCKET_NAME='cyclic-good-bee-underclothes-us-east-2';
 
 
 const app = express();
@@ -50,7 +51,7 @@ const storage = multer.diskStorage({
 const upload = multer({ 
 	storage: multerS3({
         s3: s3,
-        bucket: 'cyclic-good-bee-underclothes-us-east-2',
+        bucket: S3_BUCKET_NAME,
         key: function (req, file, cb) {
 			console.log('within multer_s3 key');
 			const participantName = `${req.body.lastName}_${req.body.firstName}`;
@@ -167,6 +168,19 @@ app.get('/api/photos', (req, res) => {
     // Return up to 10 shuffled photo filenames
     const randomPhotos = shuffledFiles.slice(0, 10);
     res.json(randomPhotos);
+  });
+});
+
+app.get('/api/participant-photos/:participantName/:photoName', (req, res) => {
+  const { participantName, photoName } = req.params;
+  const params = { Bucket: S3_BUCKET_NAME, Key: `uploads/${participantName}/${photoName}` };
+  s3.getObject(params, (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(404).send('Photo not found');
+    }
+    res.contentType('image/jpeg'); // Replace with the appropriate content type if needed
+    res.send(data.Body);
   });
 });
 

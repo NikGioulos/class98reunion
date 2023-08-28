@@ -70,13 +70,17 @@ function showParticipantDetails(participant) {
   participantDetailsContainer.appendChild(emailElement);
   participantDetailsContainer.appendChild(attendanceElement);
 
+
+  const s3PhotoURL = (photoName) => `/api/participant-photos/${participant.lastName}_${participant.firstName}/${photoName}`;
+  //`/uploads/${participant.lastName}_${participant.firstName}/profilePhoto2023.jpg`
+
   // Create image elements for the participant's photos
   const photo1998 = document.createElement('img');
-  photo1998.src = `/uploads/${participant.lastName}_${participant.firstName}/profilePhoto1998.jpg`;
+  photo1998.src = s3PhotoURL(`profilePhoto1998`);
   photo1998.title='1998';
   
   const photo2023 = document.createElement('img');
-  photo2023.src = `/uploads/${participant.lastName}_${participant.firstName}/profilePhoto2023.jpg`;
+  photo2023.src = s3PhotoURL(`profilePhoto2023`);
   photo2023.title='2023';
 
   // Append photo elements to container

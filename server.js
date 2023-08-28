@@ -53,14 +53,9 @@ const upload = multer({
         acl: 'public-read',
         bucket: 'cyclic-good-bee-underclothes-us-east-2',
         key: function (req, file, cb) {
-			console.log(file);
-			const { firstName, lastName} = req.body;
-			const participantDir = path.join(__dirname, 'uploads', `${lastName}_${firstName}`);
-			if (!fs.existsSync(participantDir)){
-				fs.mkdirSync(participantDir, { recursive: true });
-			}
-			cb(null, participantDir);
-            cb(null, `${file.fieldname}.jpg`); //use Date.now() for unique file keys
+			const participantName = `${req.body.lastName}_${req.body.firstName}`;
+			const key = `${participantName}/${file.fieldname}`;
+			cb(null, key);//use Date.now() for unique file keys
         }
     }),
 	limits: {

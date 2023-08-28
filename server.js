@@ -74,7 +74,9 @@ function loadParticipantsFromDB() {
     let s3File = s3.getObject({
       Bucket: S3_BUCKET_NAME,
       Key: 'db/participants.json',
-    }).promise();
+    })
+	//.promise()
+	;
 	const participantsData = s3File.Body.toString();
 	//const participantsData = fs.readFileSync(participantsFilePath, 'utf-8');
 	

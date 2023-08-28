@@ -1,0 +1,25 @@
+{
+  "name": "class98reunion",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NikGioulos/class98reunion.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NikGioulos/class98reunion/issues"
+  },
+  "homepage": "https://github.com/NikGioulos/class98reunion#readme",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}

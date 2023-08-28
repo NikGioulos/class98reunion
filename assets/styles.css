@@ -1,0 +1,192 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: Coral;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+section {
+  padding: 2rem;
+}
+
+
+#search {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+#participantList {
+  list-style: none;
+  padding: 0;
+  border: 1px solid #ddd;
+}
+
+#participantList li {
+  margin-bottom: 1rem;
+}
+
+.participant-details-container {
+  max-width: 100%; /* Adjust as needed */
+  margin: 0 auto;
+}
+
+.participant-details-container img {
+  max-width: 100%; /* Set the maximum width for responsive sizing */
+  height: auto;
+  margin-bottom: 1rem; /* Add some spacing between photos */
+}
+
+
+footer {
+  background-color: Coral;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+}
+
+
+#description {
+  margin-top: 4rem;
+}
+
+
+#photos {
+  padding: 2rem;
+  background-color: #f1f1f1;
+  border: 1px solid #ddd;
+}
+.photo-container {
+  max-width: 720px; /* Set the desired fixed width */
+  margin: 0 auto;
+  overflow: hidden; /* Hide any overflow from larger images */
+}
+
+.photo-container img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.photo-navigation {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+
+#register {
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+}
+
+.form-row {
+  margin-bottom: 1rem;
+}
+
+.form-row label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 0.2rem;
+}
+
+.form-row input[type="text"],
+.form-row input[type="email"],
+.form-row input[type="file"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+
+#countdown {
+  padding: 2rem;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+}
+
+#countdownTimer {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.countdown-row {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  margin-top: 1rem;
+}
+
+.countdown-block {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0 1rem;
+}
+
+.countdown-period {
+  font-size: 1rem;
+  color: #666;
+  text-transform: uppercase;
+  margin: 0 1rem;
+}
+
+
+
+.status-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-left: 5px;
+  background-size: contain;
+}
+
+.status-icon.attend {
+  background-image: url("images/green-tick.png"); /* Replace with your green tick icon */
+}
+
+.status-icon.miss {
+  background-image: url("images/red-x.png"); /* Replace with your red X icon */
+}
+
+.status-icon.question {
+  background-image: url("images/blue-question.png"); /* Replace with your red X icon */
+}
+
+
+
+.photo-preview {
+  display: block;
+  max-width: 100%;
+  margin-top: 0.5rem;
+}
+
+.logo img {
+  max-width: 100%;
+  height: auto;
+}
+
+#banner {
+  padding: 1rem 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000; /* Ensure it's above other content */
+}

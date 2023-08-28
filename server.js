@@ -50,7 +50,6 @@ const storage = multer.diskStorage({
 const upload = multer({ 
 	storage: multerS3({
         s3: s3,
-        acl: 'public-read',
         bucket: 'cyclic-good-bee-underclothes-us-east-2',
         key: function (req, file, cb) {
 			console.log('within multer_s3 key');

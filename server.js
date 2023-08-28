@@ -39,6 +39,8 @@ const storage = multer.diskStorage({
 	  }
 	});
 	
+	console.log(`enter destination2`);
+	
 	
 	if (!fs.existsSync(participantDir)){
 		fs.mkdirSync(participantDir, { recursive: true });

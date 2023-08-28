@@ -53,9 +53,11 @@ const upload = multer({
         acl: 'public-read',
         bucket: 'cyclic-good-bee-underclothes-us-east-2',
         key: function (req, file, cb) {
+			console.log('within multer_s3 key');
 			const participantName = `${req.body.lastName}_${req.body.firstName}`;
 			const key = `uploads/${participantName}/${file.fieldname}`;
 			cb(null, key);//use Date.now() for unique file keys
+			console.log('within multer_s3 key end');
         }
     }),
 	limits: {

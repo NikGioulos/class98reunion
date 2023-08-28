@@ -151,11 +151,11 @@ app.post('/api/register', upload.fields([{ name: 'profilePhoto1998', maxCount: 1
 
   // Write participants to JSON file
   //fs.writeFileSync(participantsFilePath, JSON.stringify(participants, null, 2));
-  await s3.putObject({
+  s3.putObject({
     Body: JSON.stringify(participants, null, 2),
     Bucket: process.env.BUCKET,
     Key: 'db/participants.json',
-  }).promise()
+  }).promise();
   
   console.log('registered ok ' + lastName);
   res.status(201).json({ message: 'Participant registered successfully' });

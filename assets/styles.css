@@ -19,6 +19,10 @@ nav a {
 
 section {
   padding: 2rem;
+  text-align: center;
+  max-width: 600px; /* Set your preferred maximum width */
+  margin: 0 auto; /* Center the form horizontally */
+  border: 1px solid #ddd;
 }
 
 
@@ -95,6 +99,8 @@ footer {
 
 .form-row {
   margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-row label {
@@ -105,12 +111,21 @@ footer {
 
 .form-row input[type="text"],
 .form-row input[type="email"],
+.form-row input[type="password"],
 .form-row input[type="file"] {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
+
+/* Center form buttons */
+#registrationForm button {
+  display: block;
+  margin: 0 auto; /* Center the button horizontally */
+}
+
+
 
 
 #countdown {

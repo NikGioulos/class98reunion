@@ -1,5 +1,5 @@
 function adjustIframeHeight() {
-  const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+  const windowHeight = (window.innerHeight || document.documentElement.clientHeight) / 2;
   iframe.style.height = `${windowHeight}px`;
 }
 

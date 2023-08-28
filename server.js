@@ -72,7 +72,7 @@ const participantsFilePath = path.join(__dirname, 'db', 'participants.json');
 let participants = [];
 function loadParticipantsFromDB() {
     let s3File = s3.getObject({
-      Bucket: process.env.BUCKET,
+      Bucket: S3_BUCKET_NAME,
       Key: 'db/participants.json',
     }).promise();
 	const participantsData = s3File.Body.toString();

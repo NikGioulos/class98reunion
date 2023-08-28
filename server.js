@@ -9,13 +9,7 @@ const multer = require('multer'); // for handling file uploads
 const AWS = require("aws-sdk");
 const s3 = new AWS.S3();
 const multerS3 = require('multer-s3');
-//aws.config.update({
-//    secretAccessKey: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-//    accessKeyId: 'XXXXXXXXXXXXXXX',
-//    region: 'us-east-1'
-//});
 const S3_BUCKET_NAME='cyclic-good-bee-underclothes-us-east-2';
-
 
 const app = express();
 const port = 3000; // You can change this to your desired port
@@ -24,9 +18,6 @@ const port = 3000; // You can change this to your desired port
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Set up static file serving for uploaded images
-app.use('/uploads', express.static('uploads'));
-
 // Set up static file serving for the "assets" folder
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
@@ -34,20 +25,6 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/photos', express.static(path.join(__dirname, 'photos')));
 
 // Set up file storage for multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const { firstName, lastName} = req.body;
-    const participantDir = path.join(__dirname, 'uploads', `${lastName}_${firstName}`);
-	if (!fs.existsSync(participantDir)){
-		fs.mkdirSync(participantDir, { recursive: true });
-	}
-    cb(null, participantDir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${file.fieldname}.jpg`);
-  }
-});
-
 const upload = multer({ 
 	storage: multerS3({
         s3: s3,
@@ -66,23 +43,26 @@ const upload = multer({
 	parts: 8 //max number of parts in multipart request
 });
 
-const participantsFilePath = path.join(__dirname, 'db', 'participants.json');
-
 // Load existing participants from JSON file if it exists
 let participants = [];
-function loadParticipantsFromDB() {
-    let s3File = s3.getObject({
-      Bucket: S3_BUCKET_NAME,
-      Key: 'db/participants.json',
-    })
-	//.promise()
-	;
-	const participantsData = s3File.Body.toString();
-	//const participantsData = fs.readFileSync(participantsFilePath, 'utf-8');
-	
-    participants = JSON.parse(participantsData);
-	sortByAttribute(participants, "lastName");
-	return participants;
+function loadFileFromBucket(filename){
+	return new Promise((resolve, reject) => {
+		try {
+			s3.getObject({
+				Bucket: S3_BUCKET_NAME, 
+				Key: filename
+			}, (err, data) => {
+				if (err) { 
+					reject(err);
+				} else {
+					console.log('unparsed data:', data);
+					resolve(data);		
+				}          
+			});
+		}catch(e){
+		  reject(e);
+		}
+	});
 }
 
 function removePropertyFromObjects(array, propertyToRemove) {
@@ -108,13 +88,10 @@ function sortByAttribute(array, attribute) {
 }
 
 
-
 // Endpoint to post participant registration data
 app.post('/api/register', upload.fields([{ name: 'profilePhoto1998', maxCount: 1 }, { name: 'profilePhoto2023', maxCount: 1 }]), (req, res) => {
   // Process participant data here
   const { firstName, lastName, email, attendance, pwd, dummy } = req.body;
-  
-  console.log(`Client IP: ${req.ip}`);
   if (dummy !== 'dummy') {
 	  console.log('dummy is not set');
 	  return res.status(500).json({ message: 'Server is Down' });
@@ -152,6 +129,7 @@ app.post('/api/register', upload.fields([{ name: 'profilePhoto1998', maxCount: 1
   });
 
   // Write participants to JSON file
+  // const participantsFilePath = path.join(__dirname, 'db', 'participants.json');
   //fs.writeFileSync(participantsFilePath, JSON.stringify(participants, null, 2));
   s3.putObject({
     Body: JSON.stringify(participants, null, 2),
@@ -165,9 +143,12 @@ app.post('/api/register', upload.fields([{ name: 'profilePhoto1998', maxCount: 1
 
 // Endpoint to list registered participants
 app.get('/api/participants', (req, res) => {
-  arr1 = loadParticipantsFromDB();
-  removePropertyFromObjects(arr1, "pwd");
-  res.status(200).json(arr1);
+  loadFileFromBucket(`db/participants.json`).then(response => {
+	arr1 = JSON.parse(response.Body);
+	removePropertyFromObjects(arr1, "pwd");
+	sortByAttribute(arr1, "lastName");
+	res.status(200).json(arr1);
+  });
 });
 
 app.get('/api/photos', (req, res) => {
@@ -198,6 +179,23 @@ app.get('/api/participant-photos/:participantName/:photoName', (req, res) => {
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname + '/index.html'));
+});
+
+app.get('/reset', (req, res) => {
+  s3.upload({
+	  Bucket: S3_BUCKET_NAME,
+	  Key: 'db/participants.json',
+	  Body: JSON.stringify( [] ),
+	  ContentType: 'application/json'
+	}, (err, data) => {
+	  if (err) {
+		console.log(`Error::: ${err}`);
+	  } else {
+		console.log(`File uploaded successfully. ${data.Location}`);
+	  }
+  });
+
+  return res.status(200).json({ message: 'okokok' });
 });
 
 // Start the server

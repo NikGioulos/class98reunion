@@ -153,7 +153,7 @@ app.post('/api/register', upload.fields([{ name: 'profilePhoto1998', maxCount: 1
   //fs.writeFileSync(participantsFilePath, JSON.stringify(participants, null, 2));
   s3.putObject({
     Body: JSON.stringify(participants, null, 2),
-    Bucket: process.env.BUCKET,
+    Bucket: S3_BUCKET_NAME,
     Key: 'db/participants.json',
   }).promise();
   

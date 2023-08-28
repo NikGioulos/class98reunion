@@ -120,7 +120,7 @@ function updateCountdown() {
 
   const timeDifference = targetDate - now;
   if (timeDifference <= 0) {
-    countdownElement.innerHTML = "Reunion has started!";
+    countdownElement.innerHTML = "Η Συνάντηση ξεκίνησε!!";
   } else {
     const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
     const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));

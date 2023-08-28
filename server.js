@@ -71,7 +71,7 @@ const participantsFilePath = path.join(__dirname, 'db', 'participants.json');
 // Load existing participants from JSON file if it exists
 let participants = [];
 function loadParticipantsFromDB() {
-    let s3File = await s3.getObject({
+    let s3File = s3.getObject({
       Bucket: process.env.BUCKET,
       Key: 'db/participants.json',
     }).promise();

@@ -31,7 +31,10 @@ const upload = multer({
       console.log("start file upload");
       let key = `photos/${file.originalname}`;
       if (req.body.lastName !== undefined) {
-        const participantName = `${req.body.lastName}_${req.body.firstName}`;
+        // Replace whitespaces with dashes in the firstName & lastName before store them
+        const formattedFirstName = req.body.firstName.replace(/\s+/g, "-");
+        const formattedLastName = req.body.lastName.replace(/\s+/g, "-");
+        const participantName = `${formattedLastName}_${formattedFirstName}`;
         key = `uploads/${participantName}/${file.fieldname}`;
       }
       cb(null, key); //use Date.now() for unique file keys

@@ -20,7 +20,7 @@ nav a {
 section {
   padding: 2rem;
   text-align: center;
-  max-width: 600px; /* Set your preferred maximum width */
+  max-width: 720px; /* Set your preferred maximum width */
   margin: 0 auto; /* Center the form horizontally */
   border: 1px solid #ddd;
 }
@@ -204,4 +204,10 @@ footer {
   left: 0;
   width: 100%;
   z-index: 1000; /* Ensure it's above other content */
+}
+
+iframe {
+  width: 100%; /* Set initial width to fill its container */
+  
+  resize: both; /* Allow resizing in both directions */
 }

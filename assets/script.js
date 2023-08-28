@@ -1,3 +1,8 @@
+function adjustIframeHeight() {
+  const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+  iframe.style.height = `${windowHeight}px`;
+}
+
 function getClassNameForAttendance(attendance) {
 	if (attendance === "Yes") {
       return "status-icon attend";
@@ -247,6 +252,13 @@ uploadGenericPhoto.addEventListener("click", function() {
 	  console.error('Error uploading generic photo:', error);
   });
 });
+
+
+// Call the function initially and whenever the window is resized
+const iframe = document.getElementById('location-iframe');
+adjustIframeHeight();
+window.addEventListener('resize', adjustIframeHeight);
+
 
 
 // on load

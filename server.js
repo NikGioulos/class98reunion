@@ -10,6 +10,7 @@ const AWS = require("aws-sdk");
 const s3 = new AWS.S3();
 const multerS3 = require('multer-s3');
 const S3_BUCKET_NAME='cyclic-good-bee-underclothes-us-east-2';
+const S3_SERVER_NAME=`https://${S3_BUCKET_NAME}.s3.us-east-2.amazonaws.com/`;
 
 const app = express();
 const port = 3000; // You can change this to your desired port
@@ -21,20 +22,20 @@ app.use(bodyParser.json());
 // Set up static file serving for the "assets" folder
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
-// Set up static file serving for the "photos" folder
-app.use('/photos', express.static(path.join(__dirname, 'photos')));
-
 // Set up file storage for multer
 const upload = multer({ 
 	storage: multerS3({
         s3: s3,
         bucket: S3_BUCKET_NAME,
         key: function (req, file, cb) {
-			console.log('within multer_s3 key');
-			const participantName = `${req.body.lastName}_${req.body.firstName}`;
-			const key = `uploads/${participantName}/${file.fieldname}`;
+			console.log('start file upload');
+			let key = `photos/${file.originalname}`;
+			if(req.body.lastName !== undefined) {
+				const participantName = `${req.body.lastName}_${req.body.firstName}`;
+				key = `uploads/${participantName}/${file.fieldname}`;
+			}
 			cb(null, key);//use Date.now() for unique file keys
-			console.log('within multer_s3 key end');
+			console.log('end file upload:', key);
         }
     }),
 	limits: {
@@ -164,6 +165,39 @@ app.get('/api/photos', (req, res) => {
   });
 });
 
+app.get('/api/photos2', (req, res) => {
+  // List objects in the folder
+  const maxPhotos = 10;
+  const listParams = {
+    Bucket: S3_BUCKET_NAME,
+    Prefix: `photos/`, // Include the folder path
+  };
+
+  s3.listObjectsV2(listParams, (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Error fetching photos');
+    }
+
+    // Filter out folders and get object keys
+    const objectKeys = data.Contents.map((item) => item.Key).filter((key) => !key.endsWith('/'));
+
+    // Get random photo keys
+    const randomPhotoKeys = [];
+    while (randomPhotoKeys.length < maxPhotos && objectKeys.length > 0) {
+      const randomIndex = Math.floor(Math.random() * objectKeys.length);
+      randomPhotoKeys.push(objectKeys.splice(randomIndex, 1)[0]);
+    }
+
+    // Construct S3 URLs and send response
+    //const s3BucketURL = `https://s3.amazonaws.com/${S3_BUCKET_NAME}`;
+    //const photoURLs = randomPhotoKeys.map((key) => `${S3_SERVER_NAME}/${key}`);
+	const photoURLs = randomPhotoKeys.map((key) => `api/${key}`);
+	
+    res.json({ photoURLs });
+  });
+});
+
 app.get('/api/participant-photos/:participantName/:photoName', (req, res) => {
   const { participantName, photoName } = req.params;
   const params = { Bucket: S3_BUCKET_NAME, Key: `uploads/${participantName}/${photoName}` };
@@ -177,8 +211,28 @@ app.get('/api/participant-photos/:participantName/:photoName', (req, res) => {
   });
 });
 
+app.get('/api/photos/:photoName', (req, res) => {
+  const { photoName } = req.params;
+  console.log('PhotoName is:', photoName);
+  const params = { Bucket: S3_BUCKET_NAME, Key: `photos/${photoName}` };
+  s3.getObject(params, (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(404).send('Photo not found');
+    }
+    res.contentType('image/jpeg'); // Replace with the appropriate content type if needed
+    res.send(data.Body);
+  });
+});
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname + '/index.html'));
+});
+
+
+//Admin Endpoints 
+app.post('/api/photo/add', upload.fields([{ name: 'photo', maxCount: 1 }]),(req, res) => {
+  return res.status(200).json({ message: 'photo uploaded' });
 });
 
 app.get('/reset', (req, res) => {

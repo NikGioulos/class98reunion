@@ -151,10 +151,10 @@ function updateCountdown() {
 
 
 function fetchAndDisplayPhotos() {
-  fetch('/api/photos')
+  fetch('/api/photos2')
     .then(response => response.json())
-    .then(photos => {
-      photoFilenames = photos;
+    .then(data => {
+      photoFilenames = data.photoURLs;
       showNextPhoto();
     })
     .catch(error => {
@@ -163,7 +163,8 @@ function fetchAndDisplayPhotos() {
 }
 function showPhoto(index) {
   if (index >= 0 && index < photoFilenames.length) {
-    currentPhoto.src = `/photos/${photoFilenames[index]}`;
+    //currentPhoto.src = `/photos/${photoFilenames[index]}`;
+	currentPhoto.src = `${photoFilenames[index]}`;
     currentPhotoIndex = index;
   }
   updateNavigationButtons();

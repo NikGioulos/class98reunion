@@ -153,19 +153,6 @@ app.get('/api/participants', (req, res) => {
 });
 
 app.get('/api/photos', (req, res) => {
-  fs.readdir(path.join(__dirname, 'photos'), (err, files) => {
-    if (err) {
-      return res.status(500).json({ message: 'Error reading photos directory' });
-    }
-    // Shuffle the array of photo filenames randomly
-    const shuffledFiles = files.sort(() => Math.random() - 0.5);
-    // Return up to 10 shuffled photo filenames
-    const randomPhotos = shuffledFiles.slice(0, 10);
-    res.json(randomPhotos);
-  });
-});
-
-app.get('/api/photos2', (req, res) => {
   // List objects in the folder
   const maxPhotos = 10;
   const listParams = {

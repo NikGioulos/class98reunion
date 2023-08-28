@@ -151,7 +151,7 @@ function updateCountdown() {
 
 
 function fetchAndDisplayPhotos() {
-  fetch('/api/photos2')
+  fetch('/api/photos')
     .then(response => response.json())
     .then(data => {
       photoFilenames = data.photoURLs;

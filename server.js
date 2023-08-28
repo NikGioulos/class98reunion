@@ -115,6 +115,7 @@ app.post('/api/register', upload.fields([{ name: 'profilePhoto1998', maxCount: 1
 	participant = participants[index1];
 	if (pwd === participant.pwd) {
 		participants.splice(index1, 1); //remove the old record
+		console.log('old record removed. ready to update');
 	}else {
 		console.log('cannot update');
 		return res.status(400).json({ message: 'Participant cannot be updated' });

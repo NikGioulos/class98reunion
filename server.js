@@ -27,6 +27,17 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const { firstName, lastName} = req.body;
     const participantDir = path.join(__dirname, 'uploads', `${lastName}_${firstName}`);
+	const participantDir2 = path.join(__dirname, 'uploads');
+	
+	fs.access(participantDir2, fs.constants.W_OK, (err) => {
+	  if (err) {
+		console.error(`No write access to ${participantDir2}`);
+	  } else {
+		console.log(`Write access to ${participantDir2} is available`);
+	  }
+	});
+	
+	
 	if (!fs.existsSync(participantDir)){
 		fs.mkdirSync(participantDir, { recursive: true });
 	}

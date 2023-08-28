@@ -31,7 +31,7 @@ const storage = multer.diskStorage({
 	
 	console.log(`enter destination`);
 	
-	fs.access(participantDir2, fs.constants.W_OK, (err) => {
+	fs.accessSync(participantDir2, fs.constants.W_OK, (err) => {
 	  if (err) {
 		console.log(`No write access to ${participantDir2}`);
 	  } else {

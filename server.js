@@ -100,11 +100,11 @@ app.post(
   ]),
   (req, res) => {
     // Process participant data here
-    const { firstNameRaw, lastNameRaw, email, attendance, pwd, dummy } = req.body;
+    const { firstName, lastName, email, attendance, pwd, dummy } = req.body;
 
     // Replace whitespaces with dashes in the firstName & lastName before store them
-    const firstName = firstNameRaw.replace(/\s+/g, "-");
-    const lastName = lastNameRaw.replace(/\s+/g, "-");
+    const formattedFirstName = firstName.replace(/\s+/g, "-");
+    const formattedLastName = lastName.replace(/\s+/g, "-");
 
     if (dummy !== "dummy") {
       console.log("dummy is not set");
@@ -121,7 +121,7 @@ app.post(
     console.log(`UserAgent: ${req.get("User-Agent")}`);
 
     const index1 = participants.findIndex(
-      (participant) => participant.firstName === firstName && participant.lastName === lastName
+      (participant) => participant.firstName === formattedFirstName && participant.lastName === formattedLastName
     );
     if (index1 !== -1) {
       //if participant already exists
@@ -137,8 +137,8 @@ app.post(
     }
 
     participants.push({
-      firstName,
-      lastName,
+      firstName: formattedFirstName,
+      lastName: formattedLastName,
       email,
       pwd,
       attendance,

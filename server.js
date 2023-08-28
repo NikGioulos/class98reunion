@@ -150,7 +150,7 @@ app.get('/api/photos', (req, res) => {
   });
 });
 
-app.get('/index', (req, res) => {
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname + '/index.html'));
 });
 

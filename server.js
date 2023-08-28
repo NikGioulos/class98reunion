@@ -29,9 +29,11 @@ const storage = multer.diskStorage({
     const participantDir = path.join(__dirname, 'uploads', `${lastName}_${firstName}`);
 	const participantDir2 = path.join(__dirname, 'uploads');
 	
+	console.log(`enter destination`);
+	
 	fs.access(participantDir2, fs.constants.W_OK, (err) => {
 	  if (err) {
-		console.error(`No write access to ${participantDir2}`);
+		console.log(`No write access to ${participantDir2}`);
 	  } else {
 		console.log(`Write access to ${participantDir2} is available`);
 	  }

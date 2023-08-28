@@ -4,68 +4,68 @@ function adjustIframeHeight() {
 }
 
 function getClassNameForAttendance(attendance) {
-	if (attendance === "Yes") {
-      return "status-icon attend";
-    } else if (attendance === "No") {
-      return "status-icon miss";
-    } else {
-      return "status-icon question";
-    }
+  if (attendance === "Yes") {
+    return "status-icon attend";
+  } else if (attendance === "No") {
+    return "status-icon miss";
+  } else {
+    return "status-icon question";
+  }
 }
 
 function createParticipantListItem(participant, index) {
-	const li = document.createElement("li");
-    const link = document.createElement("a");
-    link.href = `#participant-${index}`;
-    link.textContent = `${participant.lastName} ${participant.firstName}`;
-    
-    // Add icons based on the participant's status
-    const icon = document.createElement("span");
-    icon.className = getClassNameForAttendance(participant.attendance);
-    link.appendChild(icon);
+  const li = document.createElement("li");
+  const link = document.createElement("a");
+  link.href = `#participant-${index}`;
+  link.textContent = `${participant.lastName} ${participant.firstName}`;
 
-    li.appendChild(link);
-	return li;
+  // Add icons based on the participant's status
+  const icon = document.createElement("span");
+  icon.className = getClassNameForAttendance(participant.attendance);
+  link.appendChild(icon);
+
+  li.appendChild(link);
+  return li;
 }
 
 // Function to refresh the participant list
 function refreshParticipantList() {
-  fetch('/api/participants')
-    .then(response => response.json())
-    .then(participantsResp => {
-	  participants = participantsResp;
+  fetch("/api/participants")
+    .then((response) => response.json())
+    .then((participantsResp) => {
+      participants = participantsResp;
       // Clear existing list
-      participantList.innerHTML = '';
+      participantList.innerHTML = "";
 
       participants.forEach((participant, index) => {
         // Create and append participant list items
         const listItem = createParticipantListItem(participant, index);
         participantList.appendChild(listItem);
-      }); 
+      });
     })
-    .catch(error => {
-      console.error('Error fetching participants:', error);
+    .catch((error) => {
+      console.error("Error fetching participants:", error);
     });
 }
 
 function findParticipantByName(participantsArray, lastName, firstName) {
-  return participantsArray.find(p => p.firstName === firstName && p.lastName === lastName);
+  return participantsArray.find((p) => p.firstName === firstName && p.lastName === lastName);
 }
 
 function showParticipantDetails(participant) {
   // Clear existing content
-  participantDetailsContainer.innerHTML = '';
+  participantDetailsContainer.innerHTML = "";
 
   // Create elements for participant details
-  const nameElement = document.createElement('h3');
+  const nameElement = document.createElement("h3");
   nameElement.textContent = `${participant.lastName} ${participant.firstName}`;
 
-  const emailElement = document.createElement('p');
+  const emailElement = document.createElement("p");
   emailElement.textContent = `Email: ${participant.email}`;
 
-  const attendanceElement = document.createElement('p');
+  const attendanceElement = document.createElement("p");
   attendanceElement.textContent = `Attendance?:`;
-  
+
   const icon = document.createElement("span");
   icon.className = getClassNameForAttendance(participant.attendance);
   attendanceElement.appendChild(icon);
@@ -75,30 +75,30 @@ function showParticipantDetails(participant) {
   participantDetailsContainer.appendChild(emailElement);
   participantDetailsContainer.appendChild(attendanceElement);
 
-
-  const s3PhotoURL = (photoName) => `/api/participant-photos/${participant.lastName}_${participant.firstName}/${photoName}`;
+  const s3PhotoURL = (photoName) =>
+    `/api/participant-photos/${participant.lastName}_${participant.firstName}/${photoName}`;
   //`/uploads/${participant.lastName}_${participant.firstName}/profilePhoto2023.jpg`
 
   // Create image elements for the participant's photos
-  const photo1998 = document.createElement('img');
+  const photo1998 = document.createElement("img");
   photo1998.src = s3PhotoURL(`profilePhoto1998`);
-  photo1998.title='1998';
-  
-  const photo2023 = document.createElement('img');
+  photo1998.title = "1998";
+
+  const photo2023 = document.createElement("img");
   photo2023.src = s3PhotoURL(`profilePhoto2023`);
-  photo2023.title='2023';
+  photo2023.title = "2023";
 
   // Append photo elements to container
   participantDetailsContainer.appendChild(photo1998);
   participantDetailsContainer.appendChild(photo2023);
 }
 
-
 // Function to filter and refresh participant list
 function filterParticipants(searchText) {
-  const filteredParticipants = participants.filter(participant =>
-    participant.firstName.toLowerCase().includes(searchText.toLowerCase()) ||
-    participant.lastName.toLowerCase().includes(searchText.toLowerCase())
+  const filteredParticipants = participants.filter(
+    (participant) =>
+      participant.firstName.toLowerCase().includes(searchText.toLowerCase()) ||
+      participant.lastName.toLowerCase().includes(searchText.toLowerCase())
   );
 
   participantList.innerHTML = ""; // Clear existing list
@@ -134,7 +134,7 @@ function updateCountdown() {
 
     const countdownHtml = `
       <div class="countdown-text">
-        ${targetDate.toLocaleString('en-GB', { timeZone: 'Europe/Zurich' })}
+        ${targetDate.toLocaleString("en-GB", { timeZone: "Europe/Zurich" })}
       </div>
       <div class="countdown-row">
         <div class="countdown-block">${formattedDays}</div>
@@ -154,22 +154,21 @@ function updateCountdown() {
   }
 }
 
-
 function fetchAndDisplayPhotos() {
-  fetch('/api/photos')
-    .then(response => response.json())
-    .then(data => {
+  fetch("/api/photos")
+    .then((response) => response.json())
+    .then((data) => {
       photoFilenames = data.photoURLs;
       showNextPhoto();
     })
-    .catch(error => {
-      console.error('Error fetching photos:', error);
+    .catch((error) => {
+      console.error("Error fetching photos:", error);
     });
 }
 function showPhoto(index) {
   if (index >= 0 && index < photoFilenames.length) {
     //currentPhoto.src = `/photos/${photoFilenames[index]}`;
-	currentPhoto.src = `${photoFilenames[index]}`;
+    currentPhoto.src = `${photoFilenames[index]}`;
     currentPhotoIndex = index;
   }
   updateNavigationButtons();
@@ -185,49 +184,50 @@ function updateNavigationButtons() {
   nextPhotoBtn.disabled = currentPhotoIndex === photoFilenames.length - 1;
 }
 
-
 // Populate participant list
 const participantList = document.getElementById("participantList");
 const participantDetails = document.getElementById("participantDetails");
-const participantDetailsContainer = document.querySelector('.participant-details-container');
-participantList.addEventListener("click", function(event) {
+const participantDetailsContainer = document.querySelector(".participant-details-container");
+participantList.addEventListener("click", function (event) {
   event.preventDefault();
   if (event.target.tagName === "A") {
-	const lName = event.target.textContent.split(" ")[0];
-	const fName = event.target.textContent.split(" ")[1];
-	showParticipantDetails(findParticipantByName(participants, lName, fName));
+    const lName = event.target.textContent.split(" ")[0];
+    const fName = event.target.textContent.split(" ")[1];
+    showParticipantDetails(findParticipantByName(participants, lName, fName));
   }
 });
 
-
 // Attach event listener to the search input
 const searchInput = document.getElementById("search");
-searchInput.addEventListener("input", function() {
+searchInput.addEventListener("input", function () {
   filterParticipants(searchInput.value);
 });
-
 
 // Registration form submission
 const registrationForm = document.getElementById("registrationForm");
 registrationForm.addEventListener("submit", function (event) {
   event.preventDefault();
-  
-  document.getElementById("dummy").value='dummy';
+
+  let f1 = "anna maria";
+  f1 = f1.replace(/\s+/g, "-");
+  f1 = f1.replace(" ", "-");
+
+  document.getElementById("dummy").value = "dummy";
   const formData = new FormData(registrationForm);
-  fetch('/api/register', {
-    method: 'POST',
-    body: formData
+  fetch("/api/register", {
+    method: "POST",
+    body: formData,
   })
-  .then(response => response.json())
-  .then(data => {
-	  console.log(data.message); // Output the server response message
-	  refreshParticipantList(); // Refresh the participants list
-	  // Clear the form fields (if needed)
-	  registrationForm.reset();
-  })
-  .catch(error => {
-	  console.error('Error registering participant:', error);
-  });
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data.message); // Output the server response message
+      refreshParticipantList(); // Refresh the participants list
+      // Clear the form fields (if needed)
+      registrationForm.reset();
+    })
+    .catch((error) => {
+      console.error("Error registering participant:", error);
+    });
 
   // Clear form fields
   registrationForm.reset();
@@ -235,41 +235,38 @@ registrationForm.addEventListener("submit", function (event) {
 
 // Upload Generic Photo
 const uploadGenericPhoto = document.getElementById("upload-photo-btn");
-uploadGenericPhoto.addEventListener("click", function() {
+uploadGenericPhoto.addEventListener("click", function () {
   event.preventDefault();
-  
+
   const formData = new FormData(uploadPhotoForm);
-  fetch('/admin/photo/add', {
-    method: 'POST',
-    body: formData
+  fetch("/admin/photo/add", {
+    method: "POST",
+    body: formData,
   })
-  .then(response => response.json())
-  .then(data => {
-	  console.log(data.message); // Output the server response message
-	  uploadPhotoForm.reset();
-  })
-  .catch(error => {
-	  console.error('Error uploading generic photo:', error);
-  });
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data.message); // Output the server response message
+      uploadPhotoForm.reset();
+    })
+    .catch((error) => {
+      console.error("Error uploading generic photo:", error);
+    });
 });
 
-
 // Call the function initially and whenever the window is resized
-const iframe = document.getElementById('location-iframe');
+const iframe = document.getElementById("location-iframe");
 adjustIframeHeight();
-window.addEventListener('resize', adjustIframeHeight);
-
-
+window.addEventListener("resize", adjustIframeHeight);
 
 // on load
 let participants = []; //participantsSample
-refreshParticipantList(); 
+refreshParticipantList();
 
-const currentPhoto = document.getElementById('current-photo');
-const prevPhotoBtn = document.getElementById('prev-photo-btn');
-const nextPhotoBtn = document.getElementById('next-photo-btn');
-prevPhotoBtn.addEventListener('click', showPrevPhoto);
-nextPhotoBtn.addEventListener('click', showNextPhoto);
+const currentPhoto = document.getElementById("current-photo");
+const prevPhotoBtn = document.getElementById("prev-photo-btn");
+const nextPhotoBtn = document.getElementById("next-photo-btn");
+prevPhotoBtn.addEventListener("click", showPrevPhoto);
+nextPhotoBtn.addEventListener("click", showNextPhoto);
 let currentPhotoIndex = -1;
 let photoFilenames = [];
 fetchAndDisplayPhotos(); // load photos when the page loads

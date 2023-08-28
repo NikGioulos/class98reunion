@@ -146,12 +146,14 @@ app.post('/api/register', upload.fields([{ name: 'profilePhoto1998', maxCount: 1
 app.get('/api/participants', (req, res) => {
   loadFileFromBucket(`db/participants.json`).then(response => {
 	arr1 = JSON.parse(response.Body);
+	participants = arr1.slice();
 	removePropertyFromObjects(arr1, "pwd");
 	sortByAttribute(arr1, "lastName");
 	res.status(200).json(arr1);
   });
 });
 
+//retrieve 10 random photoNames from the photos bucket folder
 app.get('/api/photos', (req, res) => {
   // List objects in the folder
   const maxPhotos = 10;
@@ -177,8 +179,6 @@ app.get('/api/photos', (req, res) => {
     }
 
     // Construct S3 URLs and send response
-    //const s3BucketURL = `https://s3.amazonaws.com/${S3_BUCKET_NAME}`;
-    //const photoURLs = randomPhotoKeys.map((key) => `${S3_SERVER_NAME}/${key}`);
 	const photoURLs = randomPhotoKeys.map((key) => `api/${key}`);
 	
     res.json({ photoURLs });
@@ -218,11 +218,11 @@ app.get('/', (req, res) => {
 
 
 //Admin Endpoints 
-app.post('/api/photo/add', upload.fields([{ name: 'photo', maxCount: 1 }]),(req, res) => {
+app.post('/admin/photo/add', upload.fields([{ name: 'photo', maxCount: 1 }]),(req, res) => {
   return res.status(200).json({ message: 'photo uploaded' });
 });
 
-app.get('/reset', (req, res) => {
+app.get('/admin/reset', (req, res) => {
   s3.upload({
 	  Bucket: S3_BUCKET_NAME,
 	  Key: 'db/participants.json',

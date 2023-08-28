@@ -228,6 +228,26 @@ registrationForm.addEventListener("submit", function (event) {
   registrationForm.reset();
 });
 
+// Upload Generic Photo
+const uploadGenericPhoto = document.getElementById("upload-photo-btn");
+uploadGenericPhoto.addEventListener("click", function() {
+  event.preventDefault();
+  
+  const formData = new FormData(uploadPhotoForm);
+  fetch('/admin/photo/add', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+	  console.log(data.message); // Output the server response message
+	  uploadPhotoForm.reset();
+  })
+  .catch(error => {
+	  console.error('Error uploading generic photo:', error);
+  });
+});
+
 
 // on load
 let participants = []; //participantsSample

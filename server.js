@@ -56,7 +56,7 @@ function loadFileFromBucket(filename){
 				if (err) { 
 					reject(err);
 				} else {
-					console.log('unparsed data:', data);
+					console.log('bucket file loaded');
 					resolve(data);		
 				}          
 			});
@@ -211,16 +211,15 @@ app.get('/api/photos/:photoName', (req, res) => {
   });
 });
 
+app.post('/api/photo/add', upload.fields([{ name: 'photo', maxCount: 1 }]),(req, res) => {
+  return res.status(200).json({ message: 'photo uploaded' });
+});
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname + '/index.html'));
 });
 
-
 //Admin Endpoints 
-app.post('/admin/photo/add', upload.fields([{ name: 'photo', maxCount: 1 }]),(req, res) => {
-  return res.status(200).json({ message: 'photo uploaded' });
-});
-
 app.get('/admin/participants', (req, res) => {
   const params = { Bucket: S3_BUCKET_NAME, Key: 'db/participants.json' };
   s3.getObject(params, (err, data) => {

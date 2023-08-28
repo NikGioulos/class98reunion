@@ -232,6 +232,21 @@ app.get('/admin/participants', (req, res) => {
   });
 });
 
+app.put('/admin/participants/', (req, res) => {
+	const participants = req.body;
+	s3.putObject({
+	  Bucket: S3_BUCKET_NAME,
+	  Key: 'db/participants.json',
+	  Body: JSON.stringify(participants, null, 2),
+	}, (err) => {
+	  if (err) {
+		console.error(err);
+		return res.status(500).send('Error updating participants file');
+	  }
+	  res.status(200).send('Participants file updated successfully');
+	});
+});
+
 app.get('/admin/reset', (req, res) => {
   s3.upload({
 	  Bucket: S3_BUCKET_NAME,

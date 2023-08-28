@@ -54,7 +54,7 @@ const upload = multer({
         bucket: 'cyclic-good-bee-underclothes-us-east-2',
         key: function (req, file, cb) {
 			const participantName = `${req.body.lastName}_${req.body.firstName}`;
-			const key = `${participantName}/${file.fieldname}`;
+			const key = `uploads/${participantName}/${file.fieldname}`;
 			cb(null, key);//use Date.now() for unique file keys
         }
     }),

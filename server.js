@@ -71,12 +71,16 @@ const participantsFilePath = path.join(__dirname, 'db', 'participants.json');
 // Load existing participants from JSON file if it exists
 let participants = [];
 function loadParticipantsFromDB() {
-  if (fs.existsSync(participantsFilePath)) {
-    const participantsData = fs.readFileSync(participantsFilePath, 'utf-8');
+    let s3File = await s3.getObject({
+      Bucket: process.env.BUCKET,
+      Key: 'db/participants.json',
+    }).promise();
+	const participantsData = s3File.Body.toString();
+	//const participantsData = fs.readFileSync(participantsFilePath, 'utf-8');
+	
     participants = JSON.parse(participantsData);
 	sortByAttribute(participants, "lastName");
 	return participants;
-  }
 }
 
 function removePropertyFromObjects(array, propertyToRemove) {
@@ -146,7 +150,13 @@ app.post('/api/register', upload.fields([{ name: 'profilePhoto1998', maxCount: 1
   });
 
   // Write participants to JSON file
-  fs.writeFileSync(participantsFilePath, JSON.stringify(participants, null, 2));
+  //fs.writeFileSync(participantsFilePath, JSON.stringify(participants, null, 2));
+  await s3.putObject({
+    Body: JSON.stringify(participants, null, 2),
+    Bucket: process.env.BUCKET,
+    Key: 'db/participants.json',
+  }).promise()
+  
   console.log('registered ok ' + lastName);
   res.status(201).json({ message: 'Participant registered successfully' });
 });

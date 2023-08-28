@@ -131,8 +131,6 @@ app.post('/api/register', upload.fields([{ name: 'profilePhoto1998', maxCount: 1
   });
 
   // Write participants to JSON file
-  // const participantsFilePath = path.join(__dirname, 'db', 'participants.json');
-  //fs.writeFileSync(participantsFilePath, JSON.stringify(participants, null, 2));
   s3.putObject({
     Body: JSON.stringify(participants, null, 2),
     Bucket: S3_BUCKET_NAME,
@@ -221,6 +219,18 @@ app.get('/', (req, res) => {
 //Admin Endpoints 
 app.post('/admin/photo/add', upload.fields([{ name: 'photo', maxCount: 1 }]),(req, res) => {
   return res.status(200).json({ message: 'photo uploaded' });
+});
+
+app.get('/admin/participants', (req, res) => {
+  const params = { Bucket: S3_BUCKET_NAME, Key: 'db/participants.json' };
+  s3.getObject(params, (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(404).send('json not found');
+    }
+    res.contentType('application/json');
+    res.send(data.Body);
+  });
 });
 
 app.get('/admin/reset', (req, res) => {

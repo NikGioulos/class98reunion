@@ -172,11 +172,7 @@ app.post(
       sortByAttribute(participantsDB, "lastName");
 
       // Write participants to JSON file
-      s3.putObject({
-        Body: JSON.stringify(participantsDB, null, 2),
-        Bucket: S3_BUCKET_NAME,
-        Key: "db/participants.json",
-      }).promise();
+      putFileOnBucket("db/participants.json", JSON.stringify(participantsDB, null, 2));
 
       console.log("registered ok " + lastName);
       res.status(201).json({ message: "Participant registered successfully" });
@@ -195,21 +191,21 @@ app.get("/api/participants", (req, res) => {
 
 app.get("/api/participant-photos/:participantName/:photoName", (req, res) => {
   const { participantName, photoName } = req.params;
-  const params = { Bucket: S3_BUCKET_NAME, Key: `uploads/${participantName}/${photoName}` };
-  s3.getObject(params, (err, data) => {
-    if (err) {
-      console.error(err);
-      return res.status(404).send("Photo not found");
-    }
-    res.contentType("image/jpeg"); // Replace with the appropriate content type if needed
-    res.send(data.Body);
-  });
+  loadFileFromBucket(`uploads/${participantName}/${photoName}`)
+    .then((result) => {
+      res.contentType("image/jpeg");
+      res.send(result.Body);
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(404).send("Photo not found");
+    });
 });
 
 //retrieve 10 random photoNames from the photos bucket folder
 app.get("/api/photos", (req, res) => {
   // List objects in the folder
-  const maxPhotos = 10;
+  const maxPhotos = 20;
   const listParams = {
     Bucket: S3_BUCKET_NAME,
     Prefix: `photos/`, // Include the folder path

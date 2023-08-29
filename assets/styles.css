@@ -61,7 +61,7 @@ footer {
 }
 
 
-#description {
+#article {
   margin-top: 4rem;
 }
 
@@ -91,7 +91,6 @@ footer {
 
 
 #register {
-  padding: 2rem;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
 }
@@ -197,7 +196,7 @@ footer {
 }
 
 #banner {
-  padding: 1rem 0;
+  padding: 0.5rem 0;
   position: fixed;
   top: 0;
   left: 0;

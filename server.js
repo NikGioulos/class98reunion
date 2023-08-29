@@ -117,7 +117,7 @@ app.post(
     loadFileFromBucket(`db/participants.json`).then((response) => {
       participantsDB = JSON.parse(response.Body);
 
-      if (participants.length >= 200) {
+      if (participantsDB.length >= 200) {
         console.log("Array size has reached the limit.");
         return res.status(500).json({ message: "Server is Full" });
       }

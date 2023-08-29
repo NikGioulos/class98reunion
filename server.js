@@ -60,7 +60,7 @@ function loadFileFromBucket(filename) {
           if (err) {
             reject(err);
           } else {
-            console.log("bucket file loaded");
+            console.log("bucket file loaded: " + filename);
             resolve(data);
           }
         }
@@ -241,15 +241,15 @@ app.get("/api/photos", (req, res) => {
 app.get("/api/photos/:photoName", (req, res) => {
   const { photoName } = req.params;
   console.log("PhotoName is:", photoName);
-  const params = { Bucket: S3_BUCKET_NAME, Key: `photos/${photoName}` };
-  s3.getObject(params, (err, data) => {
-    if (err) {
-      console.error(err);
-      return res.status(404).send("Photo not found");
-    }
-    res.contentType("image/jpeg"); // Replace with the appropriate content type if needed
-    res.send(data.Body);
-  });
+  loadFileFromBucket(`photos/${photoName}`)
+    .then((result) => {
+      res.contentType("image/jpeg");
+      res.send(result.Body);
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(404).send("Photo not found");
+    });
 });
 
 app.post("/api/photo/add", upload.fields([{ name: "photo", maxCount: 1 }]), (req, res) => {
@@ -258,32 +258,24 @@ app.post("/api/photo/add", upload.fields([{ name: "photo", maxCount: 1 }]), (req
 
 //Admin Endpoints
 app.get("/admin/participants", (req, res) => {
-  const params = { Bucket: S3_BUCKET_NAME, Key: "db/participants.json" };
-  s3.getObject(params, (err, data) => {
-    if (err) {
-      console.error(err);
-      return res.status(404).send("json not found");
-    }
-    res.contentType("application/json");
-    res.send(data.Body);
-  });
+  loadFileFromBucket("db/participants.json")
+    .then((result) => {
+      res.contentType("application/json");
+      res.send(result.Body);
+    })
+    .catch((error) => {
+      res.status(404).send(error);
+    });
 });
 
 app.put("/admin/participants", (req, res) => {
-  s3.putObject(
-    {
-      Bucket: S3_BUCKET_NAME,
-      Key: "db/participants.json",
-      Body: JSON.stringify(req.body, null, 2),
-    },
-    (err) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).send("Error updating participants file");
-      }
+  putFileOnBucket("db/participants.json", JSON.stringify(req.body, null, 2))
+    .then((result) => {
       res.status(200).send("Participants file updated successfully");
-    }
-  );
+    })
+    .catch((error) => {
+      res.status(500).send("Error updating Participants file");
+    });
 });
 
 app.put("/admin/auth", (req, res) => {

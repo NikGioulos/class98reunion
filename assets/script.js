@@ -32,8 +32,8 @@ function createParticipantListItem(participant, index) {
 function refreshParticipantList() {
   fetch("/api/participants")
     .then((response) => response.json())
-    .then((participantsResp) => {
-      participants = participantsResp;
+    .then((participantsDB) => {
+      participants = participantsDB;
       // Clear existing list
       participantList.innerHTML = "";
 
@@ -77,7 +77,6 @@ function showParticipantDetails(participant) {
 
   const s3PhotoURL = (photoName) =>
     `/api/participant-photos/${participant.lastName}_${participant.firstName}/${photoName}`;
-  //`/uploads/${participant.lastName}_${participant.firstName}/profilePhoto2023.jpg`
 
   // Create image elements for the participant's photos
   const photo1998 = document.createElement("img");
@@ -160,6 +159,7 @@ function fetchAndDisplayPhotos() {
     .then((data) => {
       photoFilenames = data.photoURLs;
       showNextPhoto();
+      startAutoChange(); // Start auto-changing photos
     })
     .catch((error) => {
       console.error("Error fetching photos:", error);
@@ -167,21 +167,30 @@ function fetchAndDisplayPhotos() {
 }
 function showPhoto(index) {
   if (index >= 0 && index < photoFilenames.length) {
-    //currentPhoto.src = `/photos/${photoFilenames[index]}`;
     currentPhoto.src = `${photoFilenames[index]}`;
     currentPhotoIndex = index;
   }
   updateNavigationButtons();
 }
 function showNextPhoto() {
-  showPhoto(currentPhotoIndex + 1);
+  const nextIndex = (currentPhotoIndex + 1) % photoFilenames.length;
+  showPhoto(nextIndex);
 }
 function showPrevPhoto() {
-  showPhoto(currentPhotoIndex - 1);
+  const nextIndex = (currentPhotoIndex - 1) % photoFilenames.length;
+  showPhoto(nextIndex);
 }
 function updateNavigationButtons() {
   prevPhotoBtn.disabled = currentPhotoIndex === 0;
   nextPhotoBtn.disabled = currentPhotoIndex === photoFilenames.length - 1;
+}
+
+let autoChangeInterval; // Variable to hold the interval ID
+function startAutoChange() {
+  autoChangeInterval = setInterval(showNextPhoto, 5000); // Change photo every 5 seconds
+}
+function stopAutoChange() {
+  clearInterval(autoChangeInterval);
 }
 
 // Populate participant list
@@ -208,11 +217,6 @@ const registrationForm = document.getElementById("registrationForm");
 registrationForm.addEventListener("submit", function (event) {
   event.preventDefault();
 
-  let f1 = "anna maria";
-  f1 = f1.replace(/\s+/g, "-");
-  f1 = f1.replace(" ", "-");
-
-  document.getElementById("dummy").value = "dummy";
   const formData = new FormData(registrationForm);
   fetch("/api/register", {
     method: "POST",
@@ -267,6 +271,9 @@ const prevPhotoBtn = document.getElementById("prev-photo-btn");
 const nextPhotoBtn = document.getElementById("next-photo-btn");
 prevPhotoBtn.addEventListener("click", showPrevPhoto);
 nextPhotoBtn.addEventListener("click", showNextPhoto);
+currentPhoto.addEventListener("mouseenter", stopAutoChange);
+currentPhoto.addEventListener("mouseleave", startAutoChange);
+
 let currentPhotoIndex = -1;
 let photoFilenames = [];
 fetchAndDisplayPhotos(); // load photos when the page loads

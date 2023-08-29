@@ -48,7 +48,6 @@ const upload = multer({
 });
 
 // Load existing participants from JSON file if it exists
-let participants = [];
 function loadFileFromBucket(filename) {
   return new Promise((resolve, reject) => {
     try {
@@ -109,53 +108,54 @@ app.post(
     const formattedFirstName = firstName.replace(/\s+/g, "-");
     const formattedLastName = lastName.replace(/\s+/g, "-");
 
-    if (dummy !== "dummy") {
-      console.log("dummy is not set");
-      return res.status(500).json({ message: "Server is Down" });
-    }
-    if (participants.length >= 200) {
-      console.log("Array size has reached the limit.");
-      return res.status(500).json({ message: "Server is Full" });
-    }
     if (!req.get("User-Agent")) {
       console.log("user agent not set");
       return res.status(500).json({ error: "Invalid Username" });
     }
     console.log(`UserAgent: ${req.get("User-Agent")}`);
 
-    const index1 = participants.findIndex(
-      (participant) => participant.firstName === formattedFirstName && participant.lastName === formattedLastName
-    );
-    if (index1 !== -1) {
-      //if participant already exists
-      console.log("already exists " + lastName);
-      participant = participants[index1];
-      if (pwd === participant.pwd) {
-        participants.splice(index1, 1); //remove the old record
-        console.log("old record removed. ready to update");
-      } else {
-        console.log("cannot update");
-        return res.status(400).json({ message: "Participant cannot be updated" });
+    loadFileFromBucket(`db/participants.json`).then((response) => {
+      participantsDB = JSON.parse(response.Body);
+
+      if (participants.length >= 200) {
+        console.log("Array size has reached the limit.");
+        return res.status(500).json({ message: "Server is Full" });
       }
-    }
 
-    participants.push({
-      firstName: formattedFirstName,
-      lastName: formattedLastName,
-      email,
-      pwd,
-      attendance,
+      const index1 = participantsDB.findIndex(
+        (participant) => participant.firstName === formattedFirstName && participant.lastName === formattedLastName
+      );
+      if (index1 !== -1) {
+        //if participant already exists
+        console.log("already exists " + lastName);
+        participant = participantsDB[index1];
+        if (pwd === participant.pwd) {
+          participantsDB.splice(index1, 1); //remove the old record
+          console.log("old record removed. ready to update");
+        } else {
+          console.log("cannot update");
+          return res.status(400).json({ message: "Participant cannot be updated" });
+        }
+      }
+
+      participantsDB.push({
+        firstName: formattedFirstName,
+        lastName: formattedLastName,
+        email,
+        pwd,
+        attendance,
+      });
+
+      // Write participants to JSON file
+      s3.putObject({
+        Body: JSON.stringify(participantsDB, null, 2),
+        Bucket: S3_BUCKET_NAME,
+        Key: "db/participants.json",
+      }).promise();
+
+      console.log("registered ok " + lastName);
+      res.status(201).json({ message: "Participant registered successfully" });
     });
-
-    // Write participants to JSON file
-    s3.putObject({
-      Body: JSON.stringify(participants, null, 2),
-      Bucket: S3_BUCKET_NAME,
-      Key: "db/participants.json",
-    }).promise();
-
-    console.log("registered ok " + lastName);
-    res.status(201).json({ message: "Participant registered successfully" });
   }
 );
 

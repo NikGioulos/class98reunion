@@ -32,8 +32,8 @@ const upload = multer({
       let key = `photos/${file.originalname}`;
       if (req.body.lastName !== undefined) {
         // Replace whitespaces with dashes in the firstName & lastName before store them
-        const formattedFirstName = req.body.firstName.replace(/\s+/g, "-");
-        const formattedLastName = req.body.lastName.replace(/\s+/g, "-");
+        const formattedFirstName = replaceWhitespacesWithDash(req.body.firstName);
+        const formattedLastName = replaceWhitespacesWithDash(req.body.lastName);
         const participantName = `${formattedLastName}_${formattedFirstName}`;
         key = `uploads/${participantName}/${file.fieldname}`;
       }
@@ -47,7 +47,7 @@ const upload = multer({
   parts: 8, //max number of parts in multipart request
 });
 
-// Load existing participants from JSON file if it exists
+// Load any file from S3 Bucket
 function loadFileFromBucket(filename) {
   return new Promise((resolve, reject) => {
     try {
@@ -71,12 +71,35 @@ function loadFileFromBucket(filename) {
   });
 }
 
+// Put any file on S3 Bucket
+function putFileOnBucket(filename, body) {
+  return new Promise((resolve, reject) => {
+    try {
+      const putObjectParams = { Bucket: S3_BUCKET_NAME, Key: filename, Body: body };
+      s3.putObject(putObjectParams, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          console.log("bucket file placed");
+          resolve(body);
+        }
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
 function removePropertyFromObjects(array, propertyToRemove) {
   array.forEach((obj) => {
     if (obj.hasOwnProperty(propertyToRemove)) {
       delete obj[propertyToRemove];
     }
   });
+}
+
+function replaceWhitespacesWithDash(text) {
+  return text.replace(/\s+/g, "-");
 }
 
 function sortByAttribute(array, attribute) {
@@ -102,11 +125,11 @@ app.post(
   ]),
   (req, res) => {
     // Process participant data here
-    const { firstName, lastName, email, attendance, pwd, dummy } = req.body;
+    const { firstName, lastName, email, attendance, pwd } = req.body;
 
     // Replace whitespaces with dashes in the firstName & lastName before store them
-    const formattedFirstName = firstName.replace(/\s+/g, "-");
-    const formattedLastName = lastName.replace(/\s+/g, "-");
+    const formattedFirstName = replaceWhitespacesWithDash(firstName);
+    const formattedLastName = replaceWhitespacesWithDash(lastName);
 
     if (!req.get("User-Agent")) {
       console.log("user agent not set");
@@ -146,6 +169,8 @@ app.post(
         attendance,
       });
 
+      sortByAttribute(participantsDB, "lastName");
+
       // Write participants to JSON file
       s3.putObject({
         Body: JSON.stringify(participantsDB, null, 2),
@@ -163,10 +188,21 @@ app.post(
 app.get("/api/participants", (req, res) => {
   loadFileFromBucket(`db/participants.json`).then((response) => {
     arr1 = JSON.parse(response.Body);
-    participants = arr1.slice();
     removePropertyFromObjects(arr1, "pwd");
-    sortByAttribute(arr1, "lastName");
     res.status(200).json(arr1);
+  });
+});
+
+app.get("/api/participant-photos/:participantName/:photoName", (req, res) => {
+  const { participantName, photoName } = req.params;
+  const params = { Bucket: S3_BUCKET_NAME, Key: `uploads/${participantName}/${photoName}` };
+  s3.getObject(params, (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(404).send("Photo not found");
+    }
+    res.contentType("image/jpeg"); // Replace with the appropriate content type if needed
+    res.send(data.Body);
   });
 });
 
@@ -202,19 +238,6 @@ app.get("/api/photos", (req, res) => {
   });
 });
 
-app.get("/api/participant-photos/:participantName/:photoName", (req, res) => {
-  const { participantName, photoName } = req.params;
-  const params = { Bucket: S3_BUCKET_NAME, Key: `uploads/${participantName}/${photoName}` };
-  s3.getObject(params, (err, data) => {
-    if (err) {
-      console.error(err);
-      return res.status(404).send("Photo not found");
-    }
-    res.contentType("image/jpeg"); // Replace with the appropriate content type if needed
-    res.send(data.Body);
-  });
-});
-
 app.get("/api/photos/:photoName", (req, res) => {
   const { photoName } = req.params;
   console.log("PhotoName is:", photoName);
@@ -233,10 +256,6 @@ app.post("/api/photo/add", upload.fields([{ name: "photo", maxCount: 1 }]), (req
   return res.status(200).json({ message: "photo uploaded" });
 });
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname + "/index.html"));
-});
-
 //Admin Endpoints
 app.get("/admin/participants", (req, res) => {
   const params = { Bucket: S3_BUCKET_NAME, Key: "db/participants.json" };
@@ -250,13 +269,12 @@ app.get("/admin/participants", (req, res) => {
   });
 });
 
-app.put("/admin/participants/", (req, res) => {
-  const participants = req.body;
+app.put("/admin/participants", (req, res) => {
   s3.putObject(
     {
       Bucket: S3_BUCKET_NAME,
       Key: "db/participants.json",
-      Body: JSON.stringify(participants, null, 2),
+      Body: JSON.stringify(req.body, null, 2),
     },
     (err) => {
       if (err) {
@@ -268,8 +286,42 @@ app.put("/admin/participants/", (req, res) => {
   );
 });
 
-app.get("/admin/participantsMemory", (req, res) => {
-  return res.status(200).json(participants);
+app.put("/admin/auth", (req, res) => {
+  putFileOnBucket("db/auth.json", JSON.stringify(req.body, null, 2))
+    .then((result) => {
+      res.status(200).send("Auth file updated successfully");
+    })
+    .catch((error) => {
+      res.status(500).send("Error updating Auth file");
+    });
+});
+
+// Basic authentication middleware
+const basicAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Basic ")) {
+    res.setHeader("WWW-Authenticate", 'Basic realm="Restricted"');
+    res.status(401).send("Unauthorized");
+    return;
+  }
+
+  const credentials = Buffer.from(authHeader.split(" ")[1], "base64").toString("utf-8");
+  const [username, password] = credentials.split(":");
+
+  loadFileFromBucket(`db/auth.json`).then((response) => {
+    config = JSON.parse(response.Body);
+    if (username === config.username && password === config.password) {
+      next();
+    } else {
+      res.setHeader("WWW-Authenticate", 'Basic realm="Restricted"');
+      res.status(401).send("Unauthorized");
+    }
+  });
+};
+
+app.get("/", basicAuth, (req, res) => {
+  res.sendFile(path.join(__dirname + "/index.html"));
 });
 
 // Start the server

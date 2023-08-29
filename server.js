@@ -268,24 +268,8 @@ app.put("/admin/participants/", (req, res) => {
   );
 });
 
-app.get("/admin/reset", (req, res) => {
-  s3.upload(
-    {
-      Bucket: S3_BUCKET_NAME,
-      Key: "db/participants.json",
-      Body: JSON.stringify([]),
-      ContentType: "application/json",
-    },
-    (err, data) => {
-      if (err) {
-        console.log(`Error::: ${err}`);
-      } else {
-        console.log(`File uploaded successfully. ${data.Location}`);
-      }
-    }
-  );
-
-  return res.status(200).json({ message: "okokok" });
+app.get("/admin/participantsMemory", (req, res) => {
+  return res.status(200).json(participants);
 });
 
 // Start the server

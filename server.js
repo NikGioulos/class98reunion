@@ -360,13 +360,14 @@ app.put("/admin/auth", (req, res) => {
     });
 });
 
-app.put("/admin/comments", (req, res) => {
-  putFileOnBucket("db/comments.json", JSON.stringify(req.body, null, 2))
+app.put("/admin/reset/json", (req, res) => {
+  const filename = req.query.filename;
+  putFileOnBucket(filename, JSON.stringify(req.body, null, 2))
     .then((result) => {
-      res.status(200).send("Comments file updated successfully");
+      res.status(200).send(`${filename} file updated successfully`);
     })
     .catch((error) => {
-      res.status(500).send("Error updating Comments file");
+      res.status(500).send(`Error updating ${filename} file`);
     });
 });
 

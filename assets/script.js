@@ -86,7 +86,7 @@ function showParticipantDetails(participant) {
 
   const photo2023 = document.createElement("img");
   photo2023.src = s3PhotoURL(`profilePhoto2023`);
-  photo1998.alt = "photo of 2023";
+  photo2023.alt = "photo of 2023";
   photo2023.title = "2023";
 
   // Append photo elements to container

@@ -81,12 +81,12 @@ function showParticipantDetails(participant) {
   // Create image elements for the participant's photos
   const photo1998 = document.createElement("img");
   photo1998.src = s3PhotoURL(`profilePhoto1998`);
-  photo1998.alt = "missing photo of 1998";
+  photo1998.alt = "1998 photo is missing";
   photo1998.title = "1998";
 
   const photo2023 = document.createElement("img");
   photo2023.src = s3PhotoURL(`profilePhoto2023`);
-  photo2023.alt = "photo of 2023";
+  photo2023.alt = "2023 photo is missing";
   photo2023.title = "2023";
 
   // Append photo elements to container
@@ -172,6 +172,7 @@ function showPhoto(index) {
     currentPhoto.src = `${photoFilenames[index]}`;
     currentPhoto.alt = "generic photo";
     currentPhotoIndex = index;
+    refreshPhotoCommentsList(`${photoFilenames[index]}`);
   }
   updateNavigationButtons();
 }
@@ -222,29 +223,71 @@ function submitComment(event) {
       console.error("Error submitting comment:", error);
     });
 }
-function displayComments(comments) {
-  commentsList.innerHTML = ""; // Clear existing comments
+function submitPhotoComment(event) {
+  event.preventDefault();
 
-  comments.forEach((comment) => {
-    const commentElement = document.createElement("div");
-    commentElement.classList.add("comment");
+  const message = document.getElementById("photo-message").value;
+  const photoName = "/" + currentPhoto.src.split("/api/")[1];
+
+  const comment = { message, photoName };
+
+  fetch("/api/comments", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(comment),
+  })
+    .then((response) => response.json())
+    .then((newComment) => {
+      console.log(newComment);
+      refreshPhotoCommentsList(`/api${photoName}`);
+      document.getElementById("photo-message").value = "";
+    })
+    .catch((error) => {
+      console.error("Error submitting comment:", error);
+    });
+}
+function createCommentElement(comment) {
+  const commentElement = document.createElement("div");
+  commentElement.classList.add("comment");
+  if (comment.author === undefined) {
+    commentElement.innerHTML = `
+      <p>${comment.message}</p>
+      <p><em>Ημερομηνία: ${new Date(comment.timestamp).toLocaleString()}</em></p>
+    `;
+  } else {
     commentElement.innerHTML = `
       <h3>${comment.title}</h3>
       <p><strong>Συντάκτης:</strong> ${comment.author}</p>
       <p>${comment.message}</p>
       <p><em>Ημερομηνία: ${new Date(comment.timestamp).toLocaleString()}</em></p>
     `;
-    commentsList.appendChild(commentElement);
+  }
+  return commentElement;
+}
+function displayComments(comments) {
+  commentsList.innerHTML = ""; // Clear existing comments
+  comments.forEach((comment) => {
+    commentsList.appendChild(createCommentElement(comment));
 
     // Add a separator between comments
     const separator = document.createElement("hr");
     commentsList.appendChild(separator);
   });
 }
+function displayPhotoComments(comments) {
+  photoCommentsList.innerHTML = ""; // Clear existing comments
+  comments.forEach((comment) => {
+    photoCommentsList.appendChild(createCommentElement(comment));
+    // Add a separator between comments
+    const separator = document.createElement("hr");
+    photoCommentsList.appendChild(separator);
+  });
+}
 function refreshCommentsList() {
   const pageSize = 200;
-  const pageNumber = 1;
-  fetch(`/api/comments?pageSize=${pageSize}&pageNumber=${pageNumber}`)
+  fetch(`/api/comments?pageSize=${pageSize}`)
     .then((response) => response.json())
     .then((comments) => {
       displayComments(comments);
@@ -253,6 +296,21 @@ function refreshCommentsList() {
       console.error("Error fetching comments:", error);
     });
 }
+function refreshPhotoCommentsList(photoName) {
+  const pageSize = 200;
+  fetch(`${photoName}/comments?pageSize=${pageSize}`)
+    .then((response) => response.json())
+    .then((comments) => {
+      displayPhotoComments(comments);
+    })
+    .catch((error) => {
+      console.error("Error fetching photo comments:", error);
+    });
+}
+
+const photoCommentsList = document.getElementById("photoCommentsList");
+const photoMessageButton = document.getElementById("photo-message-btn");
+photoMessageButton.addEventListener("click", submitPhotoComment);
 
 const commentForm = document.getElementById("commentForm");
 const commentsList = document.getElementById("commentsList");

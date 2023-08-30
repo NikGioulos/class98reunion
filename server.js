@@ -125,6 +125,7 @@ app.post(
     { name: "profilePhoto2023", maxCount: 1 },
   ]),
   (req, res) => {
+    console.log(`===Enter Endpoint: /api/register`);
     // Process participant data here
     const { firstName, lastName, email, attendance, pwd } = req.body;
 
@@ -183,6 +184,7 @@ app.post(
 
 // Endpoint to list registered participants
 app.get("/api/participants", (req, res) => {
+  console.log(`===Enter Endpoint: /api/participants`);
   loadFileFromBucket(`db/participants.json`).then((response) => {
     arr1 = JSON.parse(response.Body);
     removePropertyFromObjects(arr1, "pwd");
@@ -203,8 +205,41 @@ app.get("/api/participant-photos/:participantName/:photoName", (req, res) => {
     });
 });
 
+// Endpoint to handle GET comments for given photo
+app.get("/api/photos/:photoName/comments", (req, res) => {
+  const { photoName } = req.params;
+  console.log(`===Enter Endpoint: /api/photos/${photoName}/comments`);
+
+  const pageSize = parseInt(req.query.pageSize) || 10;
+  const pageNumber = parseInt(req.query.pageNumber) || 1; // Default to 1 if not provided
+
+  // Read comments from S3
+  loadFileFromBucket(`db/comments.json`)
+    .then((response) => {
+      const comments = JSON.parse(response.Body);
+
+      console.log("unfiltered comments size = ", comments.length);
+
+      //keep only comments for specific photo
+      const photoComments = comments.filter((comment) => `/photos/${photoName}` === comment.photoName);
+
+      console.log("filtered comments size = ", photoComments.length);
+
+      // Calculate the starting index and ending index for the requested page
+      const startIndex = (pageNumber - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      // Get the comments for the requested page
+      const commentsForPage = photoComments.slice(startIndex, endIndex);
+      res.status(200).json(commentsForPage);
+    })
+    .catch((error) => {
+      res.status(500).send("Photo Comments not supported");
+    });
+});
+
 //retrieve 10 random photoNames from the photos bucket folder
 app.get("/api/photos", (req, res) => {
+  console.log("===Enter Endpoint: /api/photos");
   // List objects in the folder
   const maxPhotos = 20;
   const listParams = {
@@ -237,7 +272,7 @@ app.get("/api/photos", (req, res) => {
 
 app.get("/api/photos/:photoName", (req, res) => {
   const { photoName } = req.params;
-  console.log("PhotoName is:", photoName);
+  console.log(`===Enter Endpoint: /api/photos/${photoName}`);
   loadFileFromBucket(`photos/${photoName}`)
     .then((result) => {
       res.contentType("image/jpeg");
@@ -258,15 +293,19 @@ app.post("/api/comments", (req, res) => {
   const title = req.body.title;
   const author = req.body.author;
   const message = req.body.message;
+  const photoName = req.body.photoName;
 
-  if (!title || !author || !message) {
-    return res.status(400).json({ error: "Title, author, and message are required" });
+  if (!photoName) {
+    if (!title || !author || !message) {
+      return res.status(400).json({ error: "Title, author, and message are required" });
+    }
   }
 
   const newComment = {
     title,
     author,
     message,
+    photoName,
     timestamp: new Date().toISOString(),
   };
 
@@ -305,11 +344,15 @@ app.get("/api/comments", (req, res) => {
   loadFileFromBucket(`db/comments.json`)
     .then((response) => {
       const comments = JSON.parse(response.Body);
+
+      // keep only comments that are not bound to any photo
+      genericComments = comments.filter((comment) => comment.photoName === undefined);
+
       // Calculate the starting index and ending index for the requested page
       const startIndex = (pageNumber - 1) * pageSize;
       const endIndex = startIndex + pageSize;
       // Get the comments for the requested page
-      const commentsForPage = comments.slice(startIndex, endIndex);
+      const commentsForPage = genericComments.slice(startIndex, endIndex);
       res.json(commentsForPage);
     })
     .catch((error) => {

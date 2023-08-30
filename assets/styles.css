@@ -211,7 +211,8 @@ iframe {
   resize: both; /* Allow resizing in both directions */
 }
 
-#commentsList{
+#commentsList,
+#photoCommentsList {
   list-style: none;
   padding: 0.5rem;
   border: 1px solid #ddd;

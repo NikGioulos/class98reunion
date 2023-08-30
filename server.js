@@ -9,6 +9,7 @@ const multer = require("multer"); // for handling file uploads
 const AWS = require("aws-sdk");
 const s3 = new AWS.S3();
 const multerS3 = require("multer-s3");
+const { error } = require("console");
 const S3_BUCKET_NAME = "cyclic-good-bee-underclothes-us-east-2";
 const S3_SERVER_NAME = `https://${S3_BUCKET_NAME}.s3.us-east-2.amazonaws.com/`;
 
@@ -252,9 +253,84 @@ app.post("/api/photo/add", upload.fields([{ name: "photo", maxCount: 1 }]), (req
   return res.status(200).json({ message: "photo uploaded" });
 });
 
+// Endpoint to handle POST requests to add comments
+app.post("/api/comments", (req, res) => {
+  const title = req.body.title;
+  const author = req.body.author;
+  const message = req.body.message;
+
+  if (!title || !author || !message) {
+    return res.status(400).json({ error: "Title, author, and message are required" });
+  }
+
+  const newComment = {
+    title,
+    author,
+    message,
+    timestamp: new Date().toISOString(),
+  };
+
+  console.log("new-comment", newComment);
+
+  //fetch existing comments from S3
+  loadFileFromBucket(`db/comments.json`)
+    .then((response) => {
+      console.log("comments json fetched");
+      const comments = JSON.parse(response.Body);
+
+      // Insert the new comment at the beginning of the array
+      comments.unshift(newComment); //unshift instead of push
+
+      // Update comments in S3
+      putFileOnBucket("db/comments.json", JSON.stringify(comments))
+        .then((result) => {
+          console.log("comments json updated");
+          res.status(201).json(newComment);
+        })
+        .catch((error) => {
+          res.status(500).json({ error: "Error updating comments" });
+        });
+    })
+    .catch((error) => {
+      res.status(500).json({ error: "Comments not supported" });
+    });
+});
+
+// Endpoint to handle GET requests to fetch comments
+app.get("/api/comments", (req, res) => {
+  const pageSize = parseInt(req.query.pageSize) || 10; // Default to 20 if not provided
+  const pageNumber = parseInt(req.query.pageNumber) || 1; // Default to 1 if not provided
+
+  // Read comments from S3
+  loadFileFromBucket(`db/comments.json`)
+    .then((response) => {
+      const comments = JSON.parse(response.Body);
+      // Calculate the starting index and ending index for the requested page
+      const startIndex = (pageNumber - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      // Get the comments for the requested page
+      const commentsForPage = comments.slice(startIndex, endIndex);
+      res.json(commentsForPage);
+    })
+    .catch((error) => {
+      res.status(500).send("Comments not supported");
+    });
+});
+
 //Admin Endpoints
 app.get("/admin/participants", (req, res) => {
   loadFileFromBucket("db/participants.json")
+    .then((result) => {
+      res.contentType("application/json");
+      res.send(result.Body);
+    })
+    .catch((error) => {
+      res.status(404).send(error);
+    });
+});
+
+app.get("/admin/comments", (req, res) => {
+  loadFileFromBucket("db/comments.json")
     .then((result) => {
       res.contentType("application/json");
       res.send(result.Body);
@@ -281,6 +357,16 @@ app.put("/admin/auth", (req, res) => {
     })
     .catch((error) => {
       res.status(500).send("Error updating Auth file");
+    });
+});
+
+app.put("/admin/comments", (req, res) => {
+  putFileOnBucket("db/comments.json", JSON.stringify(req.body, null, 2))
+    .then((result) => {
+      res.status(200).send("Comments file updated successfully");
+    })
+    .catch((error) => {
+      res.status(500).send("Error updating Comments file");
     });
 });
 

@@ -209,3 +209,10 @@ iframe {
   
   resize: both; /* Allow resizing in both directions */
 }
+
+#commentsList{
+  list-style: none;
+  padding: 0;
+  border: 1px solid #ddd;
+  text-align: left;
+}

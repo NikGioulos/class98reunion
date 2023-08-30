@@ -13,6 +13,7 @@
       <a href="/">Αρχική</a>
       <a href="#participants">Συμμαθητές</a>
       <a href="#photos">Φωτογραφίες</a>
+      <a href="#comments">Σχόλια</a>
     </nav>
   </header>
 
@@ -110,8 +111,31 @@
     </div>
   </section>
 
+  <section id="comments">
+    <h2>Σχόλια/Αναμνήσεις</h2>
+    <form id="commentForm">
+      <div class="form-row">
+        <label for="title">Τίτλος</label>
+        <input type="text" id="title" name="title" required>
+      </div>
+      <div class="form-row">
+        <label for="author">Συντάκτης:</label>
+        <input type="text" id="author" name="author" required>
+      </div>
+      <div class="form-row">
+        <label for="message">Σχόλιο:</label>
+        <textarea id="message" name="message" maxlength="500" required></textarea>
+      </div>
+      <button type="submit">Αποστολή</button>
+    </form>
+    <div id="commentsList">
+      <!-- Comments will be displayed here -->
+    </div>
+  </section>
+  
+
   <footer>
-    <p>&copy; 2023 NG1</p>
+    <p>&copy; 2023 NG</p>
   </footer>
 
   <script src="assets/script.js"></script>

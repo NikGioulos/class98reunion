@@ -187,11 +187,73 @@ function updateNavigationButtons() {
 
 let autoChangeInterval; // Variable to hold the interval ID
 function startAutoChange() {
-  autoChangeInterval = setInterval(showNextPhoto, 5000); // Change photo every 5 seconds
+  //autoChangeInterval = setInterval(showNextPhoto, 5000); // Change photo every 5 seconds
 }
 function stopAutoChange() {
   clearInterval(autoChangeInterval);
 }
+
+function submitComment(event) {
+  event.preventDefault();
+
+  const title = document.getElementById("title").value;
+  const author = document.getElementById("author").value;
+  const message = document.getElementById("message").value;
+
+  const comment = { title, author, message };
+
+  fetch("/api/comments", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(comment),
+  })
+    .then((response) => response.json())
+    .then((newComment) => {
+      console.log(newComment);
+      refreshCommentsList();
+      commentForm.reset();
+    })
+    .catch((error) => {
+      console.error("Error submitting comment:", error);
+    });
+}
+function displayComments(comments) {
+  commentsList.innerHTML = ""; // Clear existing comments
+
+  comments.forEach((comment) => {
+    const commentElement = document.createElement("div");
+    commentElement.classList.add("comment");
+    commentElement.innerHTML = `
+      <h3>${comment.title}</h3>
+      <p><strong>Συντάκτης:</strong> ${comment.author}</p>
+      <p>${comment.message}</p>
+      <p><em>Ημερομηνία: ${new Date(comment.timestamp).toLocaleString()}</em></p>
+    `;
+    commentsList.appendChild(commentElement);
+
+    // Add a separator between comments
+    const separator = document.createElement("hr");
+    commentsList.appendChild(separator);
+  });
+}
+function refreshCommentsList() {
+  const pageSize = 200;
+  const pageNumber = 1;
+  fetch(`/api/comments?pageSize=${pageSize}&pageNumber=${pageNumber}`)
+    .then((response) => response.json())
+    .then((comments) => {
+      displayComments(comments);
+    })
+    .catch((error) => {
+      console.error("Error fetching comments:", error);
+    });
+}
+
+const commentForm = document.getElementById("commentForm");
+const commentsList = document.getElementById("commentsList");
+commentForm.addEventListener("submit", submitComment);
 
 // Populate participant list
 const participantList = document.getElementById("participantList");
@@ -277,6 +339,8 @@ currentPhoto.addEventListener("mouseleave", startAutoChange);
 let currentPhotoIndex = -1;
 let photoFilenames = [];
 fetchAndDisplayPhotos(); // load photos when the page loads
+
+refreshCommentsList();
 
 // Call the updateCountdown function initially
 updateCountdown();

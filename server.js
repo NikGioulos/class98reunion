@@ -340,34 +340,15 @@ app.get("/admin/comments", (req, res) => {
     });
 });
 
-app.put("/admin/participants", (req, res) => {
-  putFileOnBucket("db/participants.json", JSON.stringify(req.body, null, 2))
-    .then((result) => {
-      res.status(200).send("Participants file updated successfully");
-    })
-    .catch((error) => {
-      res.status(500).send("Error updating Participants file");
-    });
-});
-
-app.put("/admin/auth", (req, res) => {
-  putFileOnBucket("db/auth.json", JSON.stringify(req.body, null, 2))
-    .then((result) => {
-      res.status(200).send("Auth file updated successfully");
-    })
-    .catch((error) => {
-      res.status(500).send("Error updating Auth file");
-    });
-});
-
-app.put("/admin/reset/json", (req, res) => {
+// init any json file (eg participants, comments, auth)
+app.put("/admin/init/json", (req, res) => {
   const filename = req.query.filename;
   putFileOnBucket(filename, JSON.stringify(req.body, null, 2))
     .then((result) => {
-      res.status(200).send(`${filename} file updated successfully`);
+      res.status(200).send(`${filename} file initialized successfully`);
     })
     .catch((error) => {
-      res.status(500).send(`Error updating ${filename} file`);
+      res.status(500).send(`Error initializing ${filename} file`);
     });
 });
 

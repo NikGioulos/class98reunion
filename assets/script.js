@@ -81,7 +81,7 @@ function showParticipantDetails(participant) {
   // Create image elements for the participant's photos
   const photo1998 = document.createElement("img");
   photo1998.src = s3PhotoURL(`profilePhoto1998`);
-  photo1998.alt = "photo of 1998";
+  photo1998.alt = "missing photo of 1998";
   photo1998.title = "1998";
 
   const photo2023 = document.createElement("img");

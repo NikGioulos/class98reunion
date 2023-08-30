@@ -64,7 +64,7 @@ function showParticipantDetails(participant) {
   emailElement.textContent = `Email: ${participant.email}`;
 
   const attendanceElement = document.createElement("p");
-  attendanceElement.textContent = `Attendance?:`;
+  attendanceElement.textContent = `Παρουσία?:`;
 
   const icon = document.createElement("span");
   icon.className = getClassNameForAttendance(participant.attendance);
@@ -81,10 +81,12 @@ function showParticipantDetails(participant) {
   // Create image elements for the participant's photos
   const photo1998 = document.createElement("img");
   photo1998.src = s3PhotoURL(`profilePhoto1998`);
+  photo1998.alt = "photo of 1998";
   photo1998.title = "1998";
 
   const photo2023 = document.createElement("img");
   photo2023.src = s3PhotoURL(`profilePhoto2023`);
+  photo1998.alt = "photo of 2023";
   photo2023.title = "2023";
 
   // Append photo elements to container
@@ -168,6 +170,7 @@ function fetchAndDisplayPhotos() {
 function showPhoto(index) {
   if (index >= 0 && index < photoFilenames.length) {
     currentPhoto.src = `${photoFilenames[index]}`;
+    currentPhoto.alt = "generic photo";
     currentPhotoIndex = index;
   }
   updateNavigationButtons();

@@ -30,7 +30,7 @@ const upload = multer({
     bucket: S3_BUCKET_NAME,
     key: function (req, file, cb) {
       console.log("start file upload");
-      let key = `photos/${file.originalname}`;
+      let key = `photos/${Date.now()}-${file.originalname}`;
       if (req.body.lastName !== undefined) {
         // Replace whitespaces with dashes in the firstName & lastName before store them
         const formattedFirstName = replaceWhitespacesWithDash(req.body.firstName);

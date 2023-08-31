@@ -253,14 +253,14 @@ function createCommentElement(comment) {
   commentElement.classList.add("comment");
   if (comment.author === undefined) {
     commentElement.innerHTML = `
-      <p>${comment.message}</p>
+      <p>${comment.message.replace(/\n/g, "<br>")}</p>
       <p><em>Ημερομηνία: ${new Date(comment.timestamp).toLocaleString()}</em></p>
     `;
   } else {
     commentElement.innerHTML = `
       <h3>${comment.title}</h3>
       <p><strong>Συντάκτης:</strong> ${comment.author}</p>
-      <p>${comment.message}</p>
+      <p>${comment.message.replace(/\n/g, "<br>")}</p>
       <p><em>Ημερομηνία: ${new Date(comment.timestamp).toLocaleString()}</em></p>
     `;
   }

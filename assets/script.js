@@ -255,7 +255,7 @@ function plainTextToHtml(plainText) {
   // Convert URLs to clickable links
   const linkPattern = /https?:\/\/\S+/g;
   formattedText = formattedText.replace(linkPattern, (match) => {
-    return `<a href="${match}" target="_blank">${match}</a>`;
+    return `<a href="${match}" target="_blank">link</a>`;
   });
 
   return formattedText;

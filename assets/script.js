@@ -248,19 +248,31 @@ function submitPhotoComment(event) {
       console.error("Error submitting comment:", error);
     });
 }
+function plainTextToHtml(plainText) {
+  // Replace newlines with <br> tags
+  let formattedText = plainText.replace(/\n/g, "<br>");
+
+  // Convert URLs to clickable links
+  const linkPattern = /https?:\/\/\S+/g;
+  formattedText = formattedText.replace(linkPattern, (match) => {
+    return `<a href="${match}" target="_blank">${match}</a>`;
+  });
+
+  return formattedText;
+}
 function createCommentElement(comment) {
   const commentElement = document.createElement("div");
   commentElement.classList.add("comment");
   if (comment.author === undefined) {
     commentElement.innerHTML = `
-      <p>${comment.message.replace(/\n/g, "<br>")}</p>
+      <p>${plainTextToHtml(comment.message)}</p>
       <p><em>Ημερομηνία: ${new Date(comment.timestamp).toLocaleString()}</em></p>
     `;
   } else {
     commentElement.innerHTML = `
       <h3>${comment.title}</h3>
       <p><strong>Συντάκτης:</strong> ${comment.author}</p>
-      <p>${comment.message.replace(/\n/g, "<br>")}</p>
+      <p>${plainTextToHtml(comment.message)}</p>
       <p><em>Ημερομηνία: ${new Date(comment.timestamp).toLocaleString()}</em></p>
     `;
   }

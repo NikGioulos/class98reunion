@@ -149,15 +149,15 @@
     <form id="commentForm">
       <div class="form-row">
         <label for="title">Τίτλος</label>
-        <input type="text" id="title" name="title" required placeholder="Δώσε ενα τίτλο...">
+        <input type="text" id="title" name="title" placeholder="Δώσε ενα τίτλο..."/>
       </div>
       <div class="form-row">
-        <label for="author">Συντάκτης</label>
-        <input type="text" id="author" name="author" required placeholder="Το όνομά σου...">
+        <label for="author">* Συντάκτης</label>
+        <input type="text" id="author" name="author" placeholder="* Το όνομά σου..." required/>
       </div>
       <div class="form-row">
-        <label for="message">Σχόλιο</label>
-        <textarea id="message" name="message" maxlength="1000" required placeholder="Τι σκέφτεσαι..."></textarea>
+        <label for="message">* Μήνυμα</label>
+        <textarea id="message" name="message" maxlength="1000" placeholder="* Τι σκέφτεσαι..." required></textarea>
       </div>
       <input type="image" class="button-icon" src="assets/images/send.png" id="message-btn" alt="Κουμπί Αποστολής" title="Αποστολή"/>
     </form>

@@ -232,6 +232,11 @@ function submitComment(event) {
     message: document.getElementById("message").value,
   };
 
+  if (!comment.author || !comment.message) {
+    alert("Παρακαλώ συμπλήρωσε όλα τα υποχρετικά πεδία");
+    return;
+  }
+
   fetch("/api/comments", {
     method: "POST",
     headers: {

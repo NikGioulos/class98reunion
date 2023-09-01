@@ -28,6 +28,7 @@ const bad_photo_names = [
   "photos/1693506117124-my_profile_photo_nikosgdev.jpg",
   "photos/1693497191691-logo.jpg",
   "photos/1693497519600-logo.jpg",
+  "photos/gymnasio-eisodos.jpg",
 ];
 
 // Set up file storage for multer
@@ -150,9 +151,34 @@ function logEnterEndpoint(endpoint) {
   console.log(`=== ${new Date()} Enter endpoint ${endpoint}`);
 }
 
+// Basic authentication middleware
+const basicAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Basic ")) {
+    res.setHeader("WWW-Authenticate", 'Basic realm="Restricted"');
+    res.status(401).send("Unauthorized");
+    return;
+  }
+
+  const credentials = Buffer.from(authHeader.split(" ")[1], "base64").toString("utf-8");
+  const [username, password] = credentials.split(":");
+
+  loadFileFromBucket(`db/auth.json`).then((response) => {
+    config = JSON.parse(response.Body);
+    if (username === config.username && password === config.password) {
+      next();
+    } else {
+      res.setHeader("WWW-Authenticate", 'Basic realm="Restricted"');
+      res.status(401).send("Unauthorized");
+    }
+  });
+};
+
 // Endpoint to post participant registration data
 app.post(
   "/api/register",
+  basicAuth,
   upload.fields([
     { name: "profilePhoto1998", maxCount: 1 },
     { name: "profilePhoto2023", maxCount: 1 },
@@ -449,31 +475,7 @@ app.delete("/admin/photos/:photoName", (req, res) => {
     });
 });
 
-// Basic authentication middleware
-const basicAuth = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Basic ")) {
-    res.setHeader("WWW-Authenticate", 'Basic realm="Restricted"');
-    res.status(401).send("Unauthorized");
-    return;
-  }
-
-  const credentials = Buffer.from(authHeader.split(" ")[1], "base64").toString("utf-8");
-  const [username, password] = credentials.split(":");
-
-  loadFileFromBucket(`db/auth.json`).then((response) => {
-    config = JSON.parse(response.Body);
-    if (username === config.username && password === config.password) {
-      next();
-    } else {
-      res.setHeader("WWW-Authenticate", 'Basic realm="Restricted"');
-      res.status(401).send("Unauthorized");
-    }
-  });
-};
-
-app.get("/", basicAuth, (req, res) => {
+app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname + "/index.html"));
 });
 

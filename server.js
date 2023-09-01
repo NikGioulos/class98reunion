@@ -148,7 +148,7 @@ function sortByAttribute(arr, attribute) {
 }
 
 function logEnterEndpoint(endpoint) {
-  console.log(`=== ${new Date()} Enter endpoint ${endpoint}`);
+  console.log(`=== ${new Date().toLocaleString()} Enter endpoint ${endpoint}`);
 }
 
 // Basic authentication middleware
@@ -361,7 +361,7 @@ app.post("/api/comments", (req, res) => {
   logEnterEndpoint(`/api/comments`);
 
   if (!photoName) {
-    if (!title || !author || !message) {
+    if (!author || !message) {
       return res.status(400).json({ error: "Title, author, and message are required" });
     }
   }

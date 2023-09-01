@@ -76,26 +76,26 @@
       <!-- Οι λεπτομέρειες του συμμετέχοντος θα προστεθούν εδώ -->
     </div>
   </section>
-
+  
   <section id="register">
     <h2>Εγγραφή Συμμαθητή</h2>
     <form id="registrationForm">
       <div class="form-row">
-        <label for="firstName">* Όνομα:</label>
-        <input type="text" id="firstName" name="firstName" required>
+        <label for="firstName"></label>
+        <input type="text" id="firstName" name="firstName" required placeholder=" * Όνομα..."/>
       </div>
       <div class="form-row">
-        <label for="lastName">* Επώνυμο:</label>
-        <input type="text" id="lastName" name="lastName" required>
+        <label for="lastName"></label>
+        <input type="text" id="lastName" name="lastName" required placeholder=" * Επώνυμο..."/>
       </div>
       <div class="form-row">
-        <label for="contact">Διεύθυνση Επικοινωνίας (email ή fb ή insta):</label>
-        <input type="text" id="contact" name="contact">
+        <label for="contact"></label>
+        <input type="text" id="contact" name="contact" placeholder=" Διεύθυνση Επικοινωνίας (email ή fb ή insta)..." />
       </div>
-      <div class="form-row" hidden>
+      <!--div class="form-row" hidden>
         <label for="password">Κωδικός:</label>
-        <input type="password" id="pwd" name="pwd">
-      </div>
+        <input type="password" id="pwd" name="pwd" value="" placeholder="προσωπικος κωδικός για ενημέρωση στοιχείων συμμαθητή "/>
+      </div-->
       <div class="form-row">
         <label>* Παρουσία?:</label>
         <div>
@@ -106,12 +106,12 @@
         </div>
       </div>
       <div class="form-row">
-        <label for="profilePhoto1998">Φωτογραφία Προφίλ (1998):</label>
+        <label for="profilePhoto1998">Φωτογραφία Προφίλ Τότε(1998):</label>
         <input type="file" id="profilePhoto1998" name="profilePhoto1998" accept="image/*">
         <input type="text" id="profilePhotoDisplay1998" class="file-name-display" readonly hidden/>
       </div> 
       <div class="form-row">
-        <label for="profilePhoto2023">Φωτογραφία Προφίλ (1998):</label>
+        <label for="profilePhoto2023">* Φωτογραφία Προφίλ Τώρα (2023):</label>
         <input type="file" id="profilePhoto2023" name="profilePhoto2023" accept="image/*">
         <input type="text" id="profilePhotoDisplay2023" class="file-name-display" readonly hidden/>
       </div> 
@@ -137,7 +137,7 @@
       </form>   
     </div>
     <div class="form-row">
-      <textarea id="photo-message" name="photo-message" maxlength="500" placeholder="Σχόλιο για την φώτο..." required></textarea>
+      <textarea id="photo-message" name="photo-message" maxlength="500" placeholder="Σχόλιο για την παραπάνω φώτο..." required></textarea>
       <span>
         <input type="image" class="button-icon" src="assets/images/send.png" id="photo-message-btn" alt="Στείλε" title="Προσθήκη Σχολίου"/>
       </span>
@@ -157,13 +157,13 @@
       </div>
       <div class="form-row">
         <label for="author">Συντάκτης:</label>
-        <input type="text" id="author" name="author" required>
+        <input type="text" id="author" name="author" required placeholder="Το όνομά σου...">
       </div>
       <div class="form-row">
         <label for="message">Σχόλιο:</label>
-        <textarea id="message" name="message" maxlength="500" required></textarea>
+        <textarea id="message" name="message" maxlength="500" required placeholder="Τι σκέφτεσαι..."></textarea>
       </div>
-      <input type="image" class="button-icon" src="assets/images/send.png" id="message-btn" alt="Στείλε" title="Αποστολή"/>
+      <input type="image" class="button-icon" src="assets/images/send.png" id="message-btn" alt="Κουμπί Αποστολής" title="Αποστολή"/>
     </form>
     <hr/>
     <h2>Πρόσφατα Σχόλια</h2>

@@ -82,6 +82,7 @@ function showParticipantDetails(participant) {
     img.src = s3PhotoURL(`profilePhoto${year}`);
     img.alt = `${year} photo is missing`;
     img.title = year;
+    return img;
   };
 
   // Create image elements for the participant's photos
@@ -403,6 +404,7 @@ registrationForm.addEventListener("submit", function (event) {
   event.preventDefault();
 
   const formData = new FormData(registrationForm);
+  formData.pwd = "";
   fetch("/api/register", {
     method: "POST",
     body: formData,
@@ -508,50 +510,3 @@ function sortByAttribute(arr, attribute) {
     }
   });
 }
-
-const array123 = [
-  {
-    Key: "photos/1693497191691-logo.jpg",
-    LastModified: "2023-08-31T15:53:13.000Z",
-    ETag: '"b03b76b05de6c0dce73f781abc1b26ab"',
-    ChecksumAlgorithm: [],
-    Size: 654563,
-    StorageClass: "STANDARD",
-  },
-  {
-    Key: "photos/1693497519600-logo.jpg",
-    LastModified: "2023-08-31T15:58:41.000Z",
-    ETag: '"b03b76b05de6c0dce73f781abc1b26ab"',
-    ChecksumAlgorithm: [],
-    Size: 654563,
-    StorageClass: "STANDARD",
-  },
-  {
-    Key: "photos/1693506117124-my_profile_photo_nikosgdev.jpg",
-    LastModified: "2023-08-31T18:21:59.000Z",
-    ETag: '"32ec002254fb76a23e27de8fcbb0b751"',
-    ChecksumAlgorithm: [],
-    Size: 82048,
-    StorageClass: "STANDARD",
-  },
-  {
-    Key: "photos/gimnasio-amfissas.jpg",
-    LastModified: "2023-08-28T18:11:51.000Z",
-    ETag: '"165c79cdf27a6a50ea4ea057c1368a6e"',
-    ChecksumAlgorithm: [],
-    Size: 214812,
-    StorageClass: "STANDARD",
-  },
-  {
-    Key: "photos/gymnasio-eisodos.jpg",
-    LastModified: "2023-08-28T19:24:05.000Z",
-    ETag: '"657771ca48d0a4b8679f48b1c9a44dce"',
-    ChecksumAlgorithm: [],
-    Size: 9870,
-    StorageClass: "STANDARD",
-  },
-];
-
-console.log("before", array123);
-sortByAttribute(array123, "Key");
-console.log("after", array123);

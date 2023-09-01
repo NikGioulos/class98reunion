@@ -224,12 +224,3 @@ iframe {
   text-align: left;
   background-color: #f9f9f9;
 }
-
-.emoji-picker {
-  position: absolute;
-  width: 100%;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  padding: 10px;
-  display: none;
-}

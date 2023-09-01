@@ -80,7 +80,7 @@ function showParticipantDetails(participant) {
   const newImgElement = (year) => {
     const img = document.createElement("img");
     img.src = s3PhotoURL(`profilePhoto${year}`);
-    img.alt = `${year} photo is missing`;
+    img.alt = ``; //`${year} photo is missing`;
     img.title = year;
     return img;
   };
@@ -95,12 +95,34 @@ function showParticipantDetails(participant) {
 }
 
 // Function to filter and refresh participant list
-function filterParticipants(searchText) {
+function filterParticipants2(searchText) {
   const filteredParticipants = participants.filter(
     (participant) =>
       participant.firstName.toLowerCase().includes(searchText.toLowerCase()) ||
       participant.lastName.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  participantList.innerHTML = ""; // Clear existing list
+  filteredParticipants.forEach((participant, index) => {
+    const li = createParticipantListItem(participant, index);
+    participantList.appendChild(li);
+  });
+}
+function toSearchableName(name) {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/ς/g, "σ");
+}
+function filterParticipants(searchText) {
+  const normalizedSearchText = toSearchableName(searchText);
+
+  const filteredParticipants = participants.filter((participant) => {
+    const normalizedFirstName = toSearchableName(participant.firstName);
+    const normalizedLastName = toSearchableName(participant.lastName);
+    return normalizedFirstName.includes(normalizedSearchText) || normalizedLastName.includes(normalizedSearchText);
+  });
 
   participantList.innerHTML = ""; // Clear existing list
   filteredParticipants.forEach((participant, index) => {

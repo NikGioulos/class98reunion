@@ -40,10 +40,20 @@ section {
   list-style: none;
   padding: 0;
   border: 1px solid #ddd;
+
+  column-count: 2; /* Set the number of columns */
+  column-gap: 20px; /* Adjust as needed */
 }
 
 #participantList li {
   margin-bottom: 0.5rem;
+
+  max-width: 100%;
+  margin: 0 auto;
+  display: inline-block; /* Ensure each participant container is a block */
+  width: calc(50% - 10px); /* Set the width for two columns, adjust as needed */
+  box-sizing: border-box; /* Include padding and border in width calculation */
+
 }
 
 .participant-details-container {

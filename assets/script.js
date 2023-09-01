@@ -190,12 +190,18 @@ function fetchAndDisplayPhotos() {
     });
 }
 function showPhoto(index) {
-  if (index >= 0 && index < photoFilenames.length) {
-    currentPhoto.src = `${photoFilenames[index]}`;
-    currentPhoto.alt = "generic photo";
-    currentPhotoIndex = index;
-    refreshPhotoCommentsList(`${photoFilenames[index]}`);
+  if (index < 0) {
+    index = photoFilenames.length - 1; //show the last photo
   }
+  if (index == photoFilenames.length) {
+    index = 0; // show the first photo
+  }
+
+  currentPhoto.src = `${photoFilenames[index]}`;
+  currentPhoto.alt = "generic photo";
+  currentPhotoIndex = index;
+  refreshPhotoCommentsList(`${photoFilenames[index]}`);
+
   updateNavigationButtons();
 }
 function showNextPhoto() {
@@ -207,12 +213,11 @@ function showPrevPhoto() {
   showPhoto(nextIndex);
 }
 function updateNavigationButtons() {
-  prevPhotoBtn.disabled = currentPhotoIndex === 0;
-  nextPhotoBtn.disabled = currentPhotoIndex === photoFilenames.length - 1;
-
-  const calcGrayscale = (elem) => (elem.disabled ? 1 : 0);
-  prevPhotoBtn.style.filter = `grayscale(${calcGrayscale(prevPhotoBtn)})`;
-  nextPhotoBtn.style.filter = `grayscale(${calcGrayscale(nextPhotoBtn)})`;
+  //prevPhotoBtn.disabled = currentPhotoIndex === 0;
+  //nextPhotoBtn.disabled = currentPhotoIndex === photoFilenames.length - 1;
+  //const calcGrayscale = (elem) => (elem.disabled ? 1 : 0);
+  //prevPhotoBtn.style.filter = `grayscale(${calcGrayscale(prevPhotoBtn)})`;
+  //nextPhotoBtn.style.filter = `grayscale(${calcGrayscale(nextPhotoBtn)})`;
 }
 
 let autoChangeInterval; // Variable to hold the interval ID

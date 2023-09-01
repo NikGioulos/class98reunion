@@ -459,6 +459,7 @@ uploadGenericPhoto.addEventListener("click", function (event) {
     .then((response) => response.json())
     .then((data) => {
       console.log(data.message); // Output the server response message
+      alert("Η φωτο ανέβηκε επιτυχημένα...");
       uploadPhotoForm.reset();
     })
     .catch((error) => {

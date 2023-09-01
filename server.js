@@ -316,7 +316,7 @@ app.get("/api/photos/:photoName", (req, res) => {
 });
 
 app.post("/api/photo/add", upload.fields([{ name: "photo", maxCount: 1 }]), (req, res) => {
-  console.log("Uploaded file name:", req.file.originalname);
+  //console.log("Uploaded file name:", req.file.originalname);
   logEnterEndpoint(`/api/photo/add ${req.socket.remoteAddress}`);
   return res.status(200).json({ message: "photo uploaded" });
 });

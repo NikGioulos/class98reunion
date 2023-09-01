@@ -82,15 +82,15 @@
     <form id="registrationForm">
       <div class="form-row">
         <label for="firstName"></label>
-        <input type="text" id="firstName" name="firstName" required placeholder=" * Όνομα..."/>
+        <input type="text" id="firstName" name="firstName" minlength="3" maxlength="50" required placeholder=" * Όνομα..."/>
       </div>
       <div class="form-row">
         <label for="lastName"></label>
-        <input type="text" id="lastName" name="lastName" required placeholder=" * Επώνυμο..."/>
+        <input type="text" id="lastName" name="lastName" minlength="3" maxlength="50" required placeholder=" * Επώνυμο..."/>
       </div>
       <div class="form-row">
         <label for="contact"></label>
-        <input type="text" id="contact" name="contact" placeholder=" Διεύθυνση Επικοινωνίας (email ή fb ή insta)..." />
+        <input type="text" id="contact" name="contact" placeholder=" Διεύθυνση Επικοινωνίας (email/fb/insta/linkedin/x/άλλο)..." />
       </div>
       <!--div class="form-row" hidden>
         <label for="password">Κωδικός:</label>
@@ -100,22 +100,18 @@
         <label>* Παρουσία?:</label>
         <div>
           <input type="radio" name="attendance" value="Yes" required> <img src="assets/images/green-tick.png" class="button-icon"/>
-        </div>
-        <div>
           <input type="radio" name="attendance" value="No" required> <img src="assets/images/red-x.png" class="button-icon"/>
         </div>
       </div>
       <div class="form-row">
-        <label for="profilePhoto1998">Φωτογραφία Προφίλ Τότε(1998):</label>
-        <input type="file" id="profilePhoto1998" name="profilePhoto1998" accept="image/*">
-        <input type="text" id="profilePhotoDisplay1998" class="file-name-display" readonly hidden/>
+        <label for="profilePhoto1998">* Φωτογραφία Προφίλ Τότε (1998):</label>
+        <input type="file" id="profilePhoto1998" name="profilePhoto1998" accept="image/*" required/>
       </div> 
       <div class="form-row">
-        <label for="profilePhoto2023">* Φωτογραφία Προφίλ Τώρα (2023):</label>
-        <input type="file" id="profilePhoto2023" name="profilePhoto2023" accept="image/*">
-        <input type="text" id="profilePhotoDisplay2023" class="file-name-display" readonly hidden/>
+        <label for="profilePhoto2023">Φωτογραφία Προφίλ Τώρα (2023):</label>
+        <input type="file" id="profilePhoto2023" name="profilePhoto2023" accept="image/*"/>
       </div> 
-      <input type="image" class="button-icon" src="assets/images/add-user.png" id="add-user-btn" title="Προσθήκη Εγγραφής"/>  
+      <input type="image" class="button-icon" src="assets/images/add-user.png" id="add-user-btn" alt="add user btn" title="Προσθήκη Εγγραφής"/>  
     </form>
   </section>
 
@@ -137,7 +133,7 @@
       </form>   
     </div>
     <div class="form-row">
-      <textarea id="photo-message" name="photo-message" maxlength="500" placeholder="Σχόλιο για την παραπάνω φώτο..." required></textarea>
+      <textarea id="photo-message" name="photo-message" maxlength="1000" placeholder="Σχόλιο για την παραπάνω φώτο..." required></textarea>
       <span>
         <input type="image" class="button-icon" src="assets/images/send.png" id="photo-message-btn" alt="Στείλε" title="Προσθήκη Σχολίου"/>
       </span>
@@ -153,7 +149,7 @@
     <form id="commentForm">
       <div class="form-row">
         <label for="title">Τίτλος</label>
-        <input type="text" id="title" name="title" required>
+        <input type="text" id="title" name="title" required placeholder="Δώσε ενα τίτλο...">
       </div>
       <div class="form-row">
         <label for="author">Συντάκτης:</label>
@@ -161,7 +157,7 @@
       </div>
       <div class="form-row">
         <label for="message">Σχόλιο:</label>
-        <textarea id="message" name="message" maxlength="500" required placeholder="Τι σκέφτεσαι..."></textarea>
+        <textarea id="message" name="message" maxlength="1000" required placeholder="Τι σκέφτεσαι..."></textarea>
       </div>
       <input type="image" class="button-icon" src="assets/images/send.png" id="message-btn" alt="Κουμπί Αποστολής" title="Αποστολή"/>
     </form>

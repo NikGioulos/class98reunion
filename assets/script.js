@@ -404,7 +404,6 @@ registrationForm.addEventListener("submit", function (event) {
   event.preventDefault();
 
   const formData = new FormData(registrationForm);
-  formData.pwd = "";
   fetch("/api/register", {
     method: "POST",
     body: formData,

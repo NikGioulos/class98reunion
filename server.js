@@ -156,7 +156,8 @@ app.post(
   (req, res) => {
     logEnterEndpoint(`/api/register ${req.socket.remoteAddress}`);
     // Process participant data here
-    const { firstName, lastName, contact, attendance, pwd } = req.body;
+    const { firstName, lastName, contact, attendance } = req.body;
+    const pwd = "";
 
     // Replace whitespaces with dashes in the firstName & lastName before store them
     const formattedFirstName = replaceWhitespacesWithDash(firstName);

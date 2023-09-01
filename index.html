@@ -89,51 +89,58 @@
         <input type="text" id="lastName" name="lastName" required>
       </div>
       <div class="form-row">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email">
+        <label for="contact">Διεύθυνση Επικοινωνίας (email ή fb ή insta):</label>
+        <input type="text" id="contact" name="contact">
       </div>
-      <div class="form-row">
+      <div class="form-row" hidden>
         <label for="password">Κωδικός:</label>
         <input type="password" id="pwd" name="pwd">
       </div>
       <div class="form-row">
         <label>* Παρουσία?:</label>
-		<div>
-			<input type="radio" name="attendance" value="Yes" required> NAI
-		</div>
-		<div>
-			<input type="radio" name="attendance" value="No" required> OXI
-		</div>
+        <div>
+          <input type="radio" name="attendance" value="Yes" required> <img src="assets/images/green-tick.png" class="button-icon"/>
+        </div>
+        <div>
+          <input type="radio" name="attendance" value="No" required> <img src="assets/images/red-x.png" class="button-icon"/>
+        </div>
       </div>
       <div class="form-row">
-        <label for="profilePhoto">Φωτογραφία Προφίλ (1998):</label>
+        <label for="profilePhoto1998">Φωτογραφία Προφίλ (1998):</label>
         <input type="file" id="profilePhoto1998" name="profilePhoto1998" accept="image/*">
-      </div>
+        <input type="text" id="profilePhotoDisplay1998" class="file-name-display" readonly hidden/>
+      </div> 
       <div class="form-row">
-        <label for="profilePhoto">* Φωτογραφία Προφίλ (2023):</label>
-        <input type="file" id="profilePhoto2023" name="profilePhoto2023" accept="image/*" required>
-      </div>
-      <button type="submit">Εγγραφή</button>
+        <label for="profilePhoto2023">Φωτογραφία Προφίλ (1998):</label>
+        <input type="file" id="profilePhoto2023" name="profilePhoto2023" accept="image/*">
+        <input type="text" id="profilePhotoDisplay2023" class="file-name-display" readonly hidden/>
+      </div> 
+      <input type="image" class="button-icon" src="assets/images/add-user.png" id="add-user-btn" title="Προσθήκη Εγγραφής"/>  
     </form>
   </section>
 
   <section id="photos">
-    <h2>Φωτογραφίες</h2>
+    <h2>Φωτογραφίες</h2>   
     <div class="photo-container">
       <img id="current-photo" src="" alt="Φωτογραφία">
     </div>
     <div class="photo-navigation">
-      <button id="prev-photo-btn">Προηγούμενη</button>
-      <button id="next-photo-btn">Επόμενη</button>
-
+      <input type="image" class="button-icon" src="assets/images/previous.png" id="prev-photo-btn" title="Προηγούμενη"/>
+      <input type="image" class="button-icon" src="assets/images/next.png" id="next-photo-btn" title="Επόμενη"/>   
       <form id="uploadPhotoForm">
-        <button id="upload-photo-btn">Ανέβασμα</button>
-        <input type="file" id="genericphoto" name="photo" accept="image/*">
-      </form>
+        <label for="genericPhoto" id="browse-photo-label">
+          <img class="button-icon" src="assets/images/browse-photo.png" id="browse-photo-img" alt="Browse Photo" title="Αναζήτηση Φώτο..."/>
+        </label>
+        <input type="file" id="genericPhoto" name="photo" accept="image/*" hidden/>
+        <input type="text" id="genericPhotoDisplay" class="file-name-display" readonly hidden/>
+        <input type="image" class="button-icon" src="assets/images/upload-photo.png" id="upload-photo-btn" title="Ανέβασε Φώτο"/>
+      </form>   
     </div>
     <div class="form-row">
-      <textarea id="photo-message" name="photo-message" maxlength="500" placeholder="Σχολίασε την φώτο..." required></textarea>
-      <span><button id="photo-message-btn" type="button">Στείλε</button></span>
+      <textarea id="photo-message" name="photo-message" maxlength="500" placeholder="Σχόλιο για την φώτο..." required></textarea>
+      <span>
+        <input type="image" class="button-icon" src="assets/images/send.png" id="photo-message-btn" alt="Στείλε" title="Προσθήκη Σχολίου"/>
+      </span>
     </div>
     <hr/>
     <div id="photoCommentsList">
@@ -142,7 +149,7 @@
   </section>
 
   <section id="comments">
-    <h2>Σχόλια/Αναμνήσεις</h2>
+    <h2>Ανακοινώσεις/Αναμνήσεις/Ιδέες/Νέα/Σκέψεις</h2>
     <form id="commentForm">
       <div class="form-row">
         <label for="title">Τίτλος</label>
@@ -156,8 +163,9 @@
         <label for="message">Σχόλιο:</label>
         <textarea id="message" name="message" maxlength="500" required></textarea>
       </div>
-      <button type="submit">Αποστολή</button>
+      <input type="image" class="button-icon" src="assets/images/send.png" id="message-btn" alt="Στείλε" title="Αποστολή"/>
     </form>
+    <hr/>
     <h2>Πρόσφατα Σχόλια</h2>
     <div id="commentsList">
       <!-- Comments will be displayed here -->
@@ -169,6 +177,7 @@
     <p>&copy; 2023 NG</p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
   <script src="assets/script.js"></script>
 </body>
 </html>

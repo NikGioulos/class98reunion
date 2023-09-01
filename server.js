@@ -23,6 +23,9 @@ app.use(bodyParser.json());
 // Set up static file serving for the "assets" folder
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 
+// exclude the following photos from UI
+const bad_photo_names = ["photos/1693506117124-my_profile_photo_nikosgdev.jpg", "photos/1693497191691-logo.jpg"];
+
 // Set up file storage for multer
 const upload = multer({
   storage: multerS3({
@@ -91,6 +94,29 @@ function putFileOnBucket(filename, body) {
   });
 }
 
+function deleteFileFromBucket(filename) {
+  return new Promise((resolve, reject) => {
+    try {
+      s3.getObject(
+        {
+          Bucket: S3_BUCKET_NAME,
+          Key: filename,
+        },
+        (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(data);
+            console.log("bucket file deleted: " + filename);
+          }
+        }
+      );
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
 function removePropertyFromObjects(array, propertyToRemove) {
   array.forEach((obj) => {
     if (obj.hasOwnProperty(propertyToRemove)) {
@@ -103,18 +129,21 @@ function replaceWhitespacesWithDash(text) {
   return text.replace(/\s+/g, "-");
 }
 
-function sortByAttribute(array, attribute) {
-  array.sort((a, b) => {
-    const aa = a[attribute].toLowerCase();
-    const bb = b[attribute].toLowerCase();
-    if (aa < bb) {
-      return -1;
+function sortByAttribute(arr, attribute) {
+  return arr.sort((a, b) => {
+    const valueA = a[attribute];
+    const valueB = b[attribute];
+
+    if (typeof valueA === "string" && typeof valueB === "string") {
+      return valueA.localeCompare(valueB, undefined, { sensitivity: "base" });
+    } else {
+      return valueA - valueB;
     }
-    if (aa > bb) {
-      return 1;
-    }
-    return 0;
   });
+}
+
+function logEnterEndpoint(endpoint) {
+  console.log(`=== ${new Date()} Enter endpoint ${endpoint}`);
 }
 
 // Endpoint to post participant registration data
@@ -125,9 +154,9 @@ app.post(
     { name: "profilePhoto2023", maxCount: 1 },
   ]),
   (req, res) => {
-    console.log(`===Enter Endpoint: /api/register`);
+    logEnterEndpoint(`/api/register ${req.socket.remoteAddress}`);
     // Process participant data here
-    const { firstName, lastName, email, attendance, pwd } = req.body;
+    const { firstName, lastName, contact, attendance, pwd } = req.body;
 
     // Replace whitespaces with dashes in the firstName & lastName before store them
     const formattedFirstName = replaceWhitespacesWithDash(firstName);
@@ -166,7 +195,7 @@ app.post(
       participantsDB.push({
         firstName: formattedFirstName,
         lastName: formattedLastName,
-        email,
+        contact,
         pwd,
         attendance,
       });
@@ -184,7 +213,7 @@ app.post(
 
 // Endpoint to list registered participants
 app.get("/api/participants", (req, res) => {
-  console.log(`===Enter Endpoint: /api/participants`);
+  logEnterEndpoint(`/api/participants`);
   loadFileFromBucket(`db/participants.json`).then((response) => {
     arr1 = JSON.parse(response.Body);
     removePropertyFromObjects(arr1, "pwd");
@@ -194,6 +223,7 @@ app.get("/api/participants", (req, res) => {
 
 app.get("/api/participant-photos/:participantName/:photoName", (req, res) => {
   const { participantName, photoName } = req.params;
+  logEnterEndpoint(`/api/participant-photos/${participantName}/${photoName}`);
   loadFileFromBucket(`uploads/${participantName}/${photoName}`)
     .then((result) => {
       res.contentType("image/jpeg");
@@ -208,7 +238,7 @@ app.get("/api/participant-photos/:participantName/:photoName", (req, res) => {
 // Endpoint to handle GET comments for given photo
 app.get("/api/photos/:photoName/comments", (req, res) => {
   const { photoName } = req.params;
-  console.log(`===Enter Endpoint: /api/photos/${photoName}/comments`);
+  logEnterEndpoint(`/api/photos/${photoName}/comments`);
 
   const pageSize = parseInt(req.query.pageSize) || 10;
   const pageNumber = parseInt(req.query.pageNumber) || 1; // Default to 1 if not provided
@@ -218,12 +248,12 @@ app.get("/api/photos/:photoName/comments", (req, res) => {
     .then((response) => {
       const comments = JSON.parse(response.Body);
 
-      console.log("unfiltered comments size = ", comments.length);
+      console.log("all comments size = ", comments.length);
 
       //keep only comments for specific photo
       const photoComments = comments.filter((comment) => `/photos/${photoName}` === comment.photoName);
 
-      console.log("filtered comments size = ", photoComments.length);
+      console.log("photo-specific comments size = ", photoComments.length);
 
       // Calculate the starting index and ending index for the requested page
       const startIndex = (pageNumber - 1) * pageSize;
@@ -237,11 +267,10 @@ app.get("/api/photos/:photoName/comments", (req, res) => {
     });
 });
 
-//retrieve 10 random photoNames from the photos bucket folder
+//retrieve names of recent photos from the photos bucket folder
 app.get("/api/photos", (req, res) => {
-  console.log("===Enter Endpoint: /api/photos");
+  logEnterEndpoint(`===Enter Endpoint: /api/photos`);
   // List objects in the folder
-  const maxPhotos = 20;
   const listParams = {
     Bucket: S3_BUCKET_NAME,
     Prefix: `photos/`, // Include the folder path
@@ -253,18 +282,19 @@ app.get("/api/photos", (req, res) => {
       return res.status(500).send("Error fetching photos");
     }
 
-    // Filter out folders and get object keys
-    const objectKeys = data.Contents.map((item) => item.Key).filter((key) => !key.endsWith("/"));
+    const allPhotos = data.Contents.filter((photo) => !bad_photo_names.includes(photo.Key));
+    // sort by timestamp
+    sortByAttribute(allPhotos, "LastModified");
+    //Reverse sorting & Filter out folders and get object keys
+    const objectKeys = allPhotos
+      .reverse()
+      .map((item) => item.Key)
+      .filter((key) => !key.endsWith("/"));
 
-    // Get random photo keys
-    const randomPhotoKeys = [];
-    while (randomPhotoKeys.length < maxPhotos && objectKeys.length > 0) {
-      const randomIndex = Math.floor(Math.random() * objectKeys.length);
-      randomPhotoKeys.push(objectKeys.splice(randomIndex, 1)[0]);
-    }
+    console.log("=============object keys:", objectKeys);
 
     // Construct S3 URLs and send response
-    const photoURLs = randomPhotoKeys.map((key) => `api/${key}`);
+    const photoURLs = objectKeys.slice(0, Math.min(50, objectKeys.length)).map((key) => `api/${key}`);
 
     res.json({ photoURLs });
   });
@@ -272,7 +302,7 @@ app.get("/api/photos", (req, res) => {
 
 app.get("/api/photos/:photoName", (req, res) => {
   const { photoName } = req.params;
-  console.log(`===Enter Endpoint: /api/photos/${photoName}`);
+  logEnterEndpoint(`/api/photos/${photoName}`);
   loadFileFromBucket(`photos/${photoName}`)
     .then((result) => {
       res.contentType("image/jpeg");
@@ -285,6 +315,8 @@ app.get("/api/photos/:photoName", (req, res) => {
 });
 
 app.post("/api/photo/add", upload.fields([{ name: "photo", maxCount: 1 }]), (req, res) => {
+  console.log("Uploaded file name:", req.file.originalname);
+  logEnterEndpoint(`/api/photo/add ${req.socket.remoteAddress}`);
   return res.status(200).json({ message: "photo uploaded" });
 });
 
@@ -294,6 +326,8 @@ app.post("/api/comments", (req, res) => {
   const author = req.body.author;
   const message = req.body.message;
   const photoName = req.body.photoName;
+
+  logEnterEndpoint(`/api/comments`);
 
   if (!photoName) {
     if (!title || !author || !message) {
@@ -339,6 +373,8 @@ app.post("/api/comments", (req, res) => {
 app.get("/api/comments", (req, res) => {
   const pageSize = parseInt(req.query.pageSize) || 10; // Default to 20 if not provided
   const pageNumber = parseInt(req.query.pageNumber) || 1; // Default to 1 if not provided
+
+  logEnterEndpoint(`/api/comments`);
 
   // Read comments from S3
   loadFileFromBucket(`db/comments.json`)
@@ -386,12 +422,25 @@ app.get("/admin/comments", (req, res) => {
 // init any json file (eg participants, comments, auth)
 app.put("/admin/init/json", (req, res) => {
   const filename = req.query.filename;
+  console.log(`===Enter Endpoint: /admin/init/json ${req.socket.remoteAddress}`);
   putFileOnBucket(filename, JSON.stringify(req.body, null, 2))
     .then((result) => {
       res.status(200).send(`${filename} file initialized successfully`);
     })
     .catch((error) => {
       res.status(500).send(`Error initializing ${filename} file`);
+    });
+});
+
+app.delete("/admin/photos/:photoName", (req, res) => {
+  const photoName = req.params.photoName;
+  console.log(`===Enter Endpoint: /admin/photos/${photoName} ${req.socket.remoteAddress}`);
+  deleteFileFromBucket(`photos/${photoName}`)
+    .then((result) => {
+      res.status(200).json({ message: `Photo ${photoName} deleted successfully.` });
+    })
+    .catch((error) => {
+      res.status(500).json({ error: `An error occurred while deleting the photo. ${photoName}....${error}` });
     });
 });
 

@@ -60,8 +60,8 @@ function showParticipantDetails(participant) {
   const nameElement = document.createElement("h3");
   nameElement.textContent = `${participant.lastName} ${participant.firstName}`;
 
-  const emailElement = document.createElement("p");
-  emailElement.textContent = `Email: ${participant.email}`;
+  const contactElement = document.createElement("p");
+  contactElement.textContent = `Διεύθυνση Επικοινωνίας: ${participant.contact}`;
 
   const attendanceElement = document.createElement("p");
   attendanceElement.textContent = `Παρουσία?:`;
@@ -72,22 +72,21 @@ function showParticipantDetails(participant) {
 
   // Append elements to container
   participantDetailsContainer.appendChild(nameElement);
-  participantDetailsContainer.appendChild(emailElement);
+  participantDetailsContainer.appendChild(contactElement);
   participantDetailsContainer.appendChild(attendanceElement);
 
   const s3PhotoURL = (photoName) =>
     `/api/participant-photos/${participant.lastName}_${participant.firstName}/${photoName}`;
+  const newImgElement = (year) => {
+    const img = document.createElement("img");
+    img.src = s3PhotoURL(`profilePhoto${year}`);
+    img.alt = `${year} photo is missing`;
+    img.title = year;
+  };
 
   // Create image elements for the participant's photos
-  const photo1998 = document.createElement("img");
-  photo1998.src = s3PhotoURL(`profilePhoto1998`);
-  photo1998.alt = "1998 photo is missing";
-  photo1998.title = "1998";
-
-  const photo2023 = document.createElement("img");
-  photo2023.src = s3PhotoURL(`profilePhoto2023`);
-  photo2023.alt = "2023 photo is missing";
-  photo2023.title = "2023";
+  const photo1998 = newImgElement("1998");
+  const photo2023 = newImgElement("2023");
 
   // Append photo elements to container
   participantDetailsContainer.appendChild(photo1998);
@@ -187,6 +186,10 @@ function showPrevPhoto() {
 function updateNavigationButtons() {
   prevPhotoBtn.disabled = currentPhotoIndex === 0;
   nextPhotoBtn.disabled = currentPhotoIndex === photoFilenames.length - 1;
+
+  const calcGrayscale = (elem) => (elem.disabled ? 1 : 0);
+  prevPhotoBtn.style.filter = `grayscale(${calcGrayscale(prevPhotoBtn)})`;
+  nextPhotoBtn.style.filter = `grayscale(${calcGrayscale(nextPhotoBtn)})`;
 }
 
 let autoChangeInterval; // Variable to hold the interval ID
@@ -200,11 +203,11 @@ function stopAutoChange() {
 function submitComment(event) {
   event.preventDefault();
 
-  const title = document.getElementById("title").value;
-  const author = document.getElementById("author").value;
-  const message = document.getElementById("message").value;
-
-  const comment = { title, author, message };
+  const comment = {
+    title: document.getElementById("title").value,
+    author: document.getElementById("author").value,
+    message: document.getElementById("message").value,
+  };
 
   fetch("/api/comments", {
     method: "POST",
@@ -223,13 +226,14 @@ function submitComment(event) {
       console.error("Error submitting comment:", error);
     });
 }
+
 function submitPhotoComment(event) {
   event.preventDefault();
 
-  const message = document.getElementById("photo-message").value;
-  const photoName = "/" + currentPhoto.src.split("/api/")[1];
-
-  const comment = { message, photoName };
+  const comment = {
+    message: photoMessage.value,
+    photoName: "/" + currentPhoto.src.split("/api/")[1],
+  };
 
   fetch("/api/comments", {
     method: "POST",
@@ -241,8 +245,8 @@ function submitPhotoComment(event) {
     .then((response) => response.json())
     .then((newComment) => {
       console.log(newComment);
-      refreshPhotoCommentsList(`/api${photoName}`);
-      document.getElementById("photo-message").value = "";
+      refreshPhotoCommentsList(`/api${comment.photoName}`);
+      photoMessage.value = "";
     })
     .catch((error) => {
       console.error("Error submitting comment:", error);
@@ -320,13 +324,59 @@ function refreshPhotoCommentsList(photoName) {
     });
 }
 
+function addSelectedEmoji(textarea, emoji) {
+  const start = textarea.selectionStart;
+  const newText = textarea.value.slice(0, start) + emoji.native + textarea.value.slice(start);
+  textarea.value = newText;
+  textarea.focus();
+}
+
+function removeElementsByClass(className) {
+  const elements = document.getElementsByClassName(className);
+  while (elements.length > 0) {
+    elements[0].parentNode.removeChild(elements[0]);
+  }
+}
+
+function textArea_onInput(event, picker) {
+  if (event.data === ":") {
+    var div = document.createElement("div");
+    div.classList.add("temp-emoji-picker-container");
+    div.appendChild(picker);
+    event.target.parentNode.insertBefore(div, event.target.nextSibling);
+  } else {
+    removeElementsByClass("temp-emoji-picker-container");
+  }
+}
+
+const photoMessage = document.getElementById("photo-message");
+photoMessage.addEventListener("input", (event) => {
+  textArea_onInput(
+    event,
+    new EmojiMart.Picker({
+      onEmojiSelect: (emoji) => addSelectedEmoji(photoMessage, emoji),
+    })
+  );
+});
+
+const message = document.getElementById("message");
+message.addEventListener("input", (event) => {
+  textArea_onInput(
+    event,
+    new EmojiMart.Picker({
+      onEmojiSelect: (emoji) => addSelectedEmoji(message, emoji),
+    })
+  );
+});
+
 const photoCommentsList = document.getElementById("photoCommentsList");
 const photoMessageButton = document.getElementById("photo-message-btn");
 photoMessageButton.addEventListener("click", submitPhotoComment);
 
 const commentForm = document.getElementById("commentForm");
+const messageButton = document.getElementById("message-btn");
 const commentsList = document.getElementById("commentsList");
-commentForm.addEventListener("submit", submitComment);
+messageButton.addEventListener("click", submitComment);
 
 // Populate participant list
 const participantList = document.getElementById("participantList");
@@ -372,13 +422,36 @@ registrationForm.addEventListener("submit", function (event) {
   registrationForm.reset();
 });
 
+function onChangeFileUploadField(event, fileUploadDisplay) {
+  if (event.target.files.length > 0) {
+    fileUploadDisplay.value = event.target.files[0].name;
+    fileUploadDisplay.hidden = false;
+  } else {
+    fileUploadDisplay.value = "";
+    fileUploadDisplay.hidden = true;
+  }
+}
+
+// Browse Profile Photo
+document.getElementById("profilePhoto1998").addEventListener("change", (event) => {
+  onChangeFileUploadField(event, document.getElementById("profilePhotoDisplay1998"));
+});
+document.getElementById("profilePhoto2023").addEventListener("change", (event) => {
+  onChangeFileUploadField(event, document.getElementById("profilePhotoDisplay2023"));
+});
+
+// Browse Generic Photo
+document.getElementById("genericPhoto").addEventListener("change", (event) => {
+  onChangeFileUploadField(event, document.getElementById("genericPhotoDisplay"));
+});
+
 // Upload Generic Photo
 const uploadGenericPhoto = document.getElementById("upload-photo-btn");
-uploadGenericPhoto.addEventListener("click", function () {
+uploadGenericPhoto.addEventListener("click", function (event) {
   event.preventDefault();
 
   const formData = new FormData(uploadPhotoForm);
-  fetch("/admin/photo/add", {
+  fetch("/api/photo/add", {
     method: "POST",
     body: formData,
   })
@@ -420,3 +493,65 @@ updateCountdown();
 
 // Call the updateCountdown function every second
 setInterval(updateCountdown, 1000);
+
+//========
+
+function sortByAttribute(arr, attribute) {
+  return arr.slice().sort((a, b) => {
+    const valueA = a[attribute];
+    const valueB = b[attribute];
+
+    if (typeof valueA === "string" && typeof valueB === "string") {
+      return valueA.localeCompare(valueB, undefined, { sensitivity: "base" });
+    } else {
+      return valueA - valueB;
+    }
+  });
+}
+
+const array123 = [
+  {
+    Key: "photos/1693497191691-logo.jpg",
+    LastModified: "2023-08-31T15:53:13.000Z",
+    ETag: '"b03b76b05de6c0dce73f781abc1b26ab"',
+    ChecksumAlgorithm: [],
+    Size: 654563,
+    StorageClass: "STANDARD",
+  },
+  {
+    Key: "photos/1693497519600-logo.jpg",
+    LastModified: "2023-08-31T15:58:41.000Z",
+    ETag: '"b03b76b05de6c0dce73f781abc1b26ab"',
+    ChecksumAlgorithm: [],
+    Size: 654563,
+    StorageClass: "STANDARD",
+  },
+  {
+    Key: "photos/1693506117124-my_profile_photo_nikosgdev.jpg",
+    LastModified: "2023-08-31T18:21:59.000Z",
+    ETag: '"32ec002254fb76a23e27de8fcbb0b751"',
+    ChecksumAlgorithm: [],
+    Size: 82048,
+    StorageClass: "STANDARD",
+  },
+  {
+    Key: "photos/gimnasio-amfissas.jpg",
+    LastModified: "2023-08-28T18:11:51.000Z",
+    ETag: '"165c79cdf27a6a50ea4ea057c1368a6e"',
+    ChecksumAlgorithm: [],
+    Size: 214812,
+    StorageClass: "STANDARD",
+  },
+  {
+    Key: "photos/gymnasio-eisodos.jpg",
+    LastModified: "2023-08-28T19:24:05.000Z",
+    ETag: '"657771ca48d0a4b8679f48b1c9a44dce"',
+    ChecksumAlgorithm: [],
+    Size: 9870,
+    StorageClass: "STANDARD",
+  },
+];
+
+console.log("before", array123);
+sortByAttribute(array123, "Key");
+console.log("after", array123);

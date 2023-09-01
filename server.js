@@ -24,7 +24,11 @@ app.use(bodyParser.json());
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 // exclude the following photos from UI
-const bad_photo_names = ["photos/1693506117124-my_profile_photo_nikosgdev.jpg", "photos/1693497191691-logo.jpg"];
+const bad_photo_names = [
+  "photos/1693506117124-my_profile_photo_nikosgdev.jpg",
+  "photos/1693497191691-logo.jpg",
+  "photos/1693497519600-logo.jpg",
+];
 
 // Set up file storage for multer
 const upload = multer({

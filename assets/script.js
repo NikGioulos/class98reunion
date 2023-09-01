@@ -17,7 +17,7 @@ function createParticipantListItem(participant, index) {
   const li = document.createElement("li");
   const link = document.createElement("a");
   link.href = `#participant-${index}`;
-  link.textContent = `${participant.lastName} ${participant.firstName}`;
+  link.textContent = `${participant.lastName} ${participant.firstName} (${participant.school})`;
 
   // Add icons based on the participant's status
   const icon = document.createElement("span");
@@ -60,6 +60,9 @@ function showParticipantDetails(participant) {
   const nameElement = document.createElement("h3");
   nameElement.textContent = `${participant.lastName} ${participant.firstName}`;
 
+  const schoolElement = document.createElement("p");
+  schoolElement.textContent = `Γυμνάσιο: ${participant.school}`;
+
   const contactElement = document.createElement("p");
   contactElement.textContent = `Διεύθυνση Επικοινωνίας: ${participant.contact}`;
 
@@ -72,6 +75,7 @@ function showParticipantDetails(participant) {
 
   // Append elements to container
   participantDetailsContainer.appendChild(nameElement);
+  participantDetailsContainer.appendChild(schoolElement);
   participantDetailsContainer.appendChild(contactElement);
   participantDetailsContainer.appendChild(attendanceElement);
 

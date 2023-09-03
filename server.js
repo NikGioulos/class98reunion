@@ -1,17 +1,13 @@
 //npm init -y && npm install express body-parser multer
 
-const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 const multer = require("multer"); // for handling file uploads
 
-const AWS = require("aws-sdk");
-const s3 = new AWS.S3();
-const multerS3 = require("multer-s3");
-const { error } = require("console");
-const S3_BUCKET_NAME = "cyclic-good-bee-underclothes-us-east-2";
-const S3_SERVER_NAME = `https://${S3_BUCKET_NAME}.s3.us-east-2.amazonaws.com/`;
+const tools = require("./backend/tools.js");
+const dao = require("./backend/aws.js");
+const auth = require("./backend/auth.js");
 
 const app = express();
 const port = 3000; // You can change this to your desired port
@@ -33,169 +29,36 @@ const bad_photo_names = [
 
 // Set up file storage for multer
 const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: S3_BUCKET_NAME,
-    key: function (req, file, cb) {
-      console.log("start file upload");
-      let key = `photos/${Date.now()}-${file.originalname}`;
-      if (req.body.lastName !== undefined) {
-        // Replace whitespaces with dashes in the firstName & lastName before store them
-        const formattedFirstName = replaceWhitespacesWithDash(req.body.firstName);
-        const formattedLastName = replaceWhitespacesWithDash(req.body.lastName);
-        const participantName = `${formattedLastName}_${formattedFirstName}`;
-        key = `uploads/${participantName}/${file.fieldname}`;
-      }
-      cb(null, key); //use Date.now() for unique file keys
-      console.log("end file upload:", key);
-    },
-  }),
+  storage: dao.createStorageEngine(),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5 MB (adjust the size as needed)
   },
   parts: 8, //max number of parts in multipart request
 });
 
-// Load any file from S3 Bucket
-function loadFileFromBucket(filename) {
-  return new Promise((resolve, reject) => {
-    try {
-      s3.getObject(
-        {
-          Bucket: S3_BUCKET_NAME,
-          Key: filename,
-        },
-        (err, data) => {
-          if (err) {
-            reject(err);
-          } else {
-            console.log("bucket file loaded: " + filename);
-            resolve(data);
-          }
-        }
-      );
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
-
-// Put any file on S3 Bucket
-function putFileOnBucket(filename, body) {
-  return new Promise((resolve, reject) => {
-    try {
-      const putObjectParams = { Bucket: S3_BUCKET_NAME, Key: filename, Body: body };
-      s3.putObject(putObjectParams, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          console.log("bucket file placed");
-          resolve(body);
-        }
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
-
-function deleteFileFromBucket(filename) {
-  return new Promise((resolve, reject) => {
-    try {
-      s3.getObject(
-        {
-          Bucket: S3_BUCKET_NAME,
-          Key: filename,
-        },
-        (err, data) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(data);
-            console.log("bucket file deleted: " + filename);
-          }
-        }
-      );
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
-
-function removePropertyFromObjects(array, propertyToRemove) {
-  array.forEach((obj) => {
-    if (obj.hasOwnProperty(propertyToRemove)) {
-      delete obj[propertyToRemove];
-    }
-  });
-}
-
-function replaceWhitespacesWithDash(text) {
-  return text.replace(/\s+/g, "-");
-}
-
-function sortByAttribute(arr, attribute) {
-  return arr.sort((a, b) => {
-    const valueA = a[attribute];
-    const valueB = b[attribute];
-
-    if (typeof valueA === "string" && typeof valueB === "string") {
-      return valueA.localeCompare(valueB, undefined, { sensitivity: "base" });
-    } else {
-      return valueA - valueB;
-    }
-  });
-}
-
 function logEnterEndpoint(endpoint) {
   console.log(`=== ${new Date().toLocaleString()} Enter endpoint ${endpoint}`);
 }
 
-// Basic authentication middleware
-const basicAuth = (req, res, next) => {
-  if (1 === 1) {
-    next();
-    return;
-  }
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Basic ")) {
-    res.setHeader("WWW-Authenticate", 'Basic realm="Restricted"');
-    res.status(401).send("Unauthorized");
-    return;
-  }
-
-  const credentials = Buffer.from(authHeader.split(" ")[1], "base64").toString("utf-8");
-  const [username, password] = credentials.split(":");
-
-  loadFileFromBucket(`db/auth.json`).then((response) => {
-    config = JSON.parse(response.Body);
-    if (username === config.username && password === config.password) {
-      next();
-    } else {
-      res.setHeader("WWW-Authenticate", 'Basic realm="Restricted"');
-      res.status(401).send("Unauthorized");
-    }
-  });
-};
-
 // Endpoint to post participant registration data
 app.post(
   "/api/register",
-  basicAuth,
+  auth.basicAuth,
   upload.fields([
     { name: "profilePhoto1998", maxCount: 1 },
     { name: "profilePhoto2023", maxCount: 1 },
   ]),
   (req, res) => {
-    logEnterEndpoint(`/api/register ${req.socket.remoteAddress}`);
+    logEnterEndpoint(`/api/register`);
     // Process participant data here
     const { firstName, lastName, contact, attendance } = req.body;
     const pwd = "";
+    let school = "";
+    let seq = "";
 
-    // Replace whitespaces with dashes in the firstName & lastName before store them
-    const formattedFirstName = replaceWhitespacesWithDash(firstName);
-    const formattedLastName = replaceWhitespacesWithDash(lastName);
+    // Replace accents (and whitespaces with dashes) in the firstName & lastName before store them
+    const formattedFirstName = tools.toComparableName(tools.replaceWhitespacesWithDash(firstName)).toUpperCase();
+    const formattedLastName = tools.toComparableName(tools.replaceWhitespacesWithDash(lastName)).toUpperCase();
 
     if (!req.get("User-Agent")) {
       console.log("user agent not set");
@@ -203,7 +66,7 @@ app.post(
     }
     console.log(`UserAgent: ${req.get("User-Agent")}`);
 
-    loadFileFromBucket(`db/participants.json`).then((response) => {
+    dao.loadFileFromBucket(`db/participants.json`).then((response) => {
       participantsDB = JSON.parse(response.Body);
 
       if (participantsDB.length >= 200) {
@@ -212,13 +75,17 @@ app.post(
       }
 
       const index1 = participantsDB.findIndex(
-        (participant) => participant.firstName === formattedFirstName && participant.lastName === formattedLastName
+        (participant) =>
+          tools.areEqualNames(participant.firstName, formattedFirstName) &&
+          tools.areEqualNames(participant.lastName, formattedLastName)
       );
       if (index1 !== -1) {
         //if participant already exists
         console.log("already exists " + lastName);
         participant = participantsDB[index1];
-        if (pwd === participant.pwd) {
+        school = participant.school;
+        seq = participant.seq;
+        if (!participant.pwd || pwd === participant.pwd) {
           participantsDB.splice(index1, 1); //remove the old record
           console.log("old record removed. ready to update");
         } else {
@@ -228,20 +95,26 @@ app.post(
       }
 
       participantsDB.push({
+        seq,
         firstName: formattedFirstName,
         lastName: formattedLastName,
         contact,
         pwd,
+        school,
         attendance,
       });
 
-      sortByAttribute(participantsDB, "lastName");
+      tools.sortByAttribute(participantsDB, "lastName");
 
       // Write participants to JSON file
-      putFileOnBucket("db/participants.json", JSON.stringify(participantsDB, null, 2));
+      dao.putFileOnBucket("db/participants.json", JSON.stringify(participantsDB, null, 2));
 
       console.log("registered ok " + lastName);
-      res.status(201).json({ message: "Participant registered successfully" });
+      if (index1 === -1) {
+        res.status(201).json({ message: "Participant registered successfully" });
+      } else {
+        res.status(200).json({ message: "Participant updated successfully" });
+      }
     });
   }
 );
@@ -249,9 +122,9 @@ app.post(
 // Endpoint to list registered participants
 app.get("/api/participants", (req, res) => {
   logEnterEndpoint(`/api/participants`);
-  loadFileFromBucket(`db/participants.json`).then((response) => {
+  dao.loadFileFromBucket(`db/participants.json`).then((response) => {
     arr1 = JSON.parse(response.Body);
-    removePropertyFromObjects(arr1, "pwd");
+    tools.removePropertyFromObjects(arr1, "pwd");
     res.status(200).json(arr1);
   });
 });
@@ -259,13 +132,13 @@ app.get("/api/participants", (req, res) => {
 app.get("/api/participant-photos/:participantName/:photoName", (req, res) => {
   const { participantName, photoName } = req.params;
   logEnterEndpoint(`/api/participant-photos/${participantName}/${photoName}`);
-  loadFileFromBucket(`uploads/${participantName}/${photoName}`)
-    .then((result) => {
+  dao
+    .loadFileFromBucket(`uploads/${participantName}/${photoName}`)
+    .then((response) => {
       res.contentType("image/jpeg");
-      res.send(result.Body);
+      res.send(response.Body);
     })
     .catch((error) => {
-      console.log(error);
       res.status(404).send("Photo not found");
     });
 });
@@ -279,7 +152,8 @@ app.get("/api/photos/:photoName/comments", (req, res) => {
   const pageNumber = parseInt(req.query.pageNumber) || 1; // Default to 1 if not provided
 
   // Read comments from S3
-  loadFileFromBucket(`db/comments.json`)
+  dao
+    .loadFileFromBucket(`db/comments.json`)
     .then((response) => {
       const comments = JSON.parse(response.Body);
 
@@ -298,59 +172,53 @@ app.get("/api/photos/:photoName/comments", (req, res) => {
       res.status(200).json(commentsForPage);
     })
     .catch((error) => {
-      res.status(500).send("Photo Comments not supported");
+      res.status(500).json({ error: "Photo Comments not supported" });
     });
 });
 
 //retrieve names of recent photos from the photos bucket folder
 app.get("/api/photos", (req, res) => {
   logEnterEndpoint(`===Enter Endpoint: /api/photos`);
-  // List objects in the folder
-  const listParams = {
-    Bucket: S3_BUCKET_NAME,
-    Prefix: `photos/`, // Include the folder path
-  };
+  // List objects from 'photos' folder
+  dao
+    .listFilesFromBucket("photos")
+    .then((result) => {
+      const allPhotos = result.Contents.filter((photo) => !bad_photo_names.includes(photo.Key));
+      // sort by timestamp
+      tools.sortByAttribute(allPhotos, "LastModified");
+      //Reverse sorting & Filter out folders and get object keys
+      const objectKeys = allPhotos
+        .reverse()
+        .map((item) => item.Key)
+        .filter((key) => !key.endsWith("/"));
 
-  s3.listObjectsV2(listParams, (err, data) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Error fetching photos");
-    }
+      console.log("=============object keys:", objectKeys);
 
-    const allPhotos = data.Contents.filter((photo) => !bad_photo_names.includes(photo.Key));
-    // sort by timestamp
-    sortByAttribute(allPhotos, "LastModified");
-    //Reverse sorting & Filter out folders and get object keys
-    const objectKeys = allPhotos
-      .reverse()
-      .map((item) => item.Key)
-      .filter((key) => !key.endsWith("/"));
+      // Construct S3 URLs and send response
+      const photoURLs = objectKeys.slice(0, Math.min(50, objectKeys.length)).map((key) => `api/${key}`);
 
-    console.log("=============object keys:", objectKeys);
-
-    // Construct S3 URLs and send response
-    const photoURLs = objectKeys.slice(0, Math.min(50, objectKeys.length)).map((key) => `api/${key}`);
-
-    res.json({ photoURLs });
-  });
+      res.json({ photoURLs });
+    })
+    .catch((error) => {
+      res.status(500).json({ error: "Error fetching photos" });
+    });
 });
 
 app.get("/api/photos/:photoName", (req, res) => {
   const { photoName } = req.params;
   logEnterEndpoint(`/api/photos/${photoName}`);
-  loadFileFromBucket(`photos/${photoName}`)
+  dao
+    .loadFileFromBucket(`photos/${photoName}`)
     .then((result) => {
       res.contentType("image/jpeg");
       res.send(result.Body);
     })
     .catch((error) => {
-      console.log(error);
-      res.status(404).send("Photo not found");
+      res.status(404).json({ error: "Photo not found" });
     });
 });
 
 app.post("/api/photo/add", upload.fields([{ name: "photo", maxCount: 1 }]), (req, res) => {
-  //console.log("Uploaded file name:", req.file.originalname);
   logEnterEndpoint(`/api/photo/add ${req.socket.remoteAddress}`);
   return res.status(200).json({ message: "photo uploaded" });
 });
@@ -366,7 +234,7 @@ app.post("/api/comments", (req, res) => {
 
   if (!photoName) {
     if (!author || !message) {
-      return res.status(400).json({ error: "Title, author, and message are required" });
+      return res.status(400).json({ error: "Συντάκτης και Μήνυμα είναι υποχρεωτικά πεδία" });
     }
   }
 
@@ -381,7 +249,8 @@ app.post("/api/comments", (req, res) => {
   console.log("new-comment", newComment);
 
   //fetch existing comments from S3
-  loadFileFromBucket(`db/comments.json`)
+  dao
+    .loadFileFromBucket(`db/comments.json`)
     .then((response) => {
       console.log("comments json fetched");
       const comments = JSON.parse(response.Body);
@@ -390,7 +259,8 @@ app.post("/api/comments", (req, res) => {
       comments.unshift(newComment); //unshift instead of push
 
       // Update comments in S3
-      putFileOnBucket("db/comments.json", JSON.stringify(comments))
+      dao
+        .putFileOnBucket("db/comments.json", JSON.stringify(comments))
         .then((result) => {
           console.log("comments json updated");
           res.status(201).json(newComment);
@@ -400,22 +270,20 @@ app.post("/api/comments", (req, res) => {
         });
     })
     .catch((error) => {
-      res.status(500).json({ error: "Comments not supported" });
+      res.status(500).json({ error: "Post Comment is not supported" });
     });
 });
 
 // Endpoint to handle GET requests to fetch comments
 app.get("/api/comments", (req, res) => {
-  const pageSize = parseInt(req.query.pageSize) || 10; // Default to 20 if not provided
+  const pageSize = parseInt(req.query.pageSize) || 100; // Default to 100 if not provided
   const pageNumber = parseInt(req.query.pageNumber) || 1; // Default to 1 if not provided
-
   logEnterEndpoint(`/api/comments`);
-
   // Read comments from S3
-  loadFileFromBucket(`db/comments.json`)
+  dao
+    .loadFileFromBucket(`db/comments.json`)
     .then((response) => {
       const comments = JSON.parse(response.Body);
-
       // keep only comments that are not bound to any photo
       genericComments = comments.filter((comment) => comment.photoName === undefined);
 
@@ -424,16 +292,17 @@ app.get("/api/comments", (req, res) => {
       const endIndex = startIndex + pageSize;
       // Get the comments for the requested page
       const commentsForPage = genericComments.slice(startIndex, endIndex);
-      res.json(commentsForPage);
+      res.status(200).json(commentsForPage);
     })
     .catch((error) => {
-      res.status(500).send("Comments not supported");
+      res.status(500).json({ error: "Comments not supported" });
     });
 });
 
 //Admin Endpoints
 app.get("/admin/participants", (req, res) => {
-  loadFileFromBucket("db/participants.json")
+  dao
+    .loadFileFromBucket("db/participants.json")
     .then((result) => {
       res.contentType("application/json");
       res.send(result.Body);
@@ -444,7 +313,8 @@ app.get("/admin/participants", (req, res) => {
 });
 
 app.get("/admin/comments", (req, res) => {
-  loadFileFromBucket("db/comments.json")
+  dao
+    .loadFileFromBucket("db/comments.json")
     .then((result) => {
       res.contentType("application/json");
       res.send(result.Body);
@@ -458,7 +328,8 @@ app.get("/admin/comments", (req, res) => {
 app.put("/admin/init/json", (req, res) => {
   const filename = req.query.filename;
   console.log(`===Enter Endpoint: /admin/init/json ${req.socket.remoteAddress}`);
-  putFileOnBucket(filename, JSON.stringify(req.body, null, 2))
+  dao
+    .putFileOnBucket(filename, JSON.stringify(req.body, null, 2))
     .then((result) => {
       res.status(200).send(`${filename} file initialized successfully`);
     })
@@ -470,7 +341,8 @@ app.put("/admin/init/json", (req, res) => {
 app.delete("/admin/photos/:photoName", (req, res) => {
   const photoName = req.params.photoName;
   console.log(`===Enter Endpoint: /admin/photos/${photoName} ${req.socket.remoteAddress}`);
-  deleteFileFromBucket(`photos/${photoName}`)
+  dao
+    .deleteFileFromBucket(`photos/${photoName}`)
     .then((result) => {
       res.status(200).json({ message: `Photo ${photoName} deleted successfully.` });
     })
@@ -481,20 +353,16 @@ app.delete("/admin/photos/:photoName", (req, res) => {
 
 app.get("/admin/uploadedphotos", (req, res) => {
   logEnterEndpoint(`===Enter Endpoint: /admin/uploadedphotos`);
-  // List objects in the folder
-  const listParams = {
-    Bucket: S3_BUCKET_NAME,
-    Prefix: `uploads/`, // Include the folder path
-  };
-
-  s3.listObjectsV2(listParams, (err, data) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Error fetching uploaded photos");
-    }
-    const allUploadedPhotos = data.Contents.map((item) => item.Key).filter((key) => !key.endsWith("/"));
-    res.json({ allUploadedPhotos });
-  });
+  // List objects in the 'uploads' folder
+  dao
+    .listFilesFromBucket("uploads")
+    .then((result) => {
+      const allUploadedPhotos = result.Contents.map((item) => item.Key).filter((key) => !key.endsWith("/"));
+      res.json({ allUploadedPhotos });
+    })
+    .catch((error) => {
+      res.status(500).send("Error fetching uploaded photos");
+    });
 });
 
 app.get("/", (req, res) => {
@@ -505,3 +373,5 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+module.exports = app;

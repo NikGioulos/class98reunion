@@ -98,20 +98,6 @@ function showParticipantDetails(participant) {
   participantDetailsContainer.appendChild(photo2023);
 }
 
-// Function to filter and refresh participant list
-function filterParticipants2(searchText) {
-  const filteredParticipants = participants.filter(
-    (participant) =>
-      participant.firstName.toLowerCase().includes(searchText.toLowerCase()) ||
-      participant.lastName.toLowerCase().includes(searchText.toLowerCase())
-  );
-
-  participantList.innerHTML = ""; // Clear existing list
-  filteredParticipants.forEach((participant, index) => {
-    const li = createParticipantListItem(participant, index);
-    participantList.appendChild(li);
-  });
-}
 function toSearchableName(name) {
   return name
     .normalize("NFD")
@@ -119,6 +105,8 @@ function toSearchableName(name) {
     .toLowerCase()
     .replace(/ς/g, "σ");
 }
+
+// Function to filter and refresh participant list
 function filterParticipants(searchText) {
   const normalizedSearchText = toSearchableName(searchText);
 
@@ -422,9 +410,14 @@ const participantDetailsContainer = document.querySelector(".participant-details
 participantList.addEventListener("click", function (event) {
   event.preventDefault();
   if (event.target.tagName === "A") {
+    //A for <a>
     const lName = event.target.textContent.split(" ")[0];
     const fName = event.target.textContent.split(" ")[1];
     showParticipantDetails(findParticipantByName(participants, lName, fName));
+    // Find the corresponding participant details element
+    const targetElement = document.getElementById("participant-details");
+    // Scroll to the target element smoothly
+    targetElement.scrollIntoView({ behavior: "smooth" });
   }
 });
 

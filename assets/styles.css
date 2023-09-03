@@ -41,20 +41,16 @@ section {
   list-style: none;
   padding: 0;
   border: 1px solid #ddd;
-
-
 }
 
 #participantList li {
   margin-bottom: 0.5rem;
-
-
-
 }
 
 .participant-details-container {
   max-width: 100%; /* Adjust as needed */
   margin: 0 auto;
+  padding-top: 4rem; /* for autofocusing upon clicking on participant-list */
 }
 
 .participant-details-container img {

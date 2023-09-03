@@ -414,10 +414,13 @@ participantList.addEventListener("click", function (event) {
     const lName = event.target.textContent.split(" ")[0];
     const fName = event.target.textContent.split(" ")[1];
     showParticipantDetails(findParticipantByName(participants, lName, fName));
-    // Find the corresponding participant details element
-    const targetElement = document.getElementById("participant-details");
-    // Scroll to the target element smoothly
-    targetElement.scrollIntoView({ behavior: "smooth" });
+
+    // Scroll to the corresponding participant details element
+    document.getElementById("participant-details").scrollIntoView({ behavior: "smooth" });
+
+    //mark as the clicked <li> as selected
+    document.querySelectorAll("#participantList li").forEach((li) => li.classList.remove("selected"));
+    event.target.parentNode.classList.add("selected");
   }
 });
 

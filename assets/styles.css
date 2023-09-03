@@ -47,6 +47,10 @@ section {
   margin-bottom: 0.5rem;
 }
 
+li.selected {
+  background-color: coral;
+}
+
 .participant-details-container {
   max-width: 100%; /* Adjust as needed */
   margin: 0 auto;

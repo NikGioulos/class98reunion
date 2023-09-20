@@ -25,6 +25,11 @@ const bad_photo_names = [
   "photos/1693497191691-logo.jpg",
   "photos/1693497519600-logo.jpg",
   "photos/gymnasio-eisodos.jpg",
+  "photos/1695196642140-",
+  "photos/1695196634820-",
+  "photos/1695196622942-",
+  "photos/1695196533703-",
+  "photos/1695203677869-",
 ];
 
 // Set up file storage for multer
@@ -183,7 +188,7 @@ app.get("/api/photos", (req, res) => {
   dao
     .listFilesFromBucket("photos")
     .then((result) => {
-      const allPhotos = result.Contents.filter((photo) => !bad_photo_names.includes(photo.Key));
+      const allPhotos = result.Contents.filter((photo) => !tools.isBadName(photo.Key, bad_photo_names));
       // sort by timestamp
       tools.sortByAttribute(allPhotos, "LastModified");
       //Reverse sorting & Filter out folders and get object keys

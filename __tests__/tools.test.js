@@ -1,4 +1,10 @@
-const { areEqualNames, replaceWhitespacesWithDash, sortByAttribute } = require("../backend/tools.js");
+const {
+  areEqualNames,
+  replaceWhitespacesWithDash,
+  sortByAttribute,
+  greekToEnglish,
+  keepLatinOnly,
+} = require("../backend/tools.js");
 
 describe("areEqualNames", () => {
   it("should return true for equal names", () => {
@@ -91,5 +97,43 @@ describe("sortByAttribute", () => {
       { name: "Bob", score: "B" },
       { name: "Alice", score: "C" },
     ]);
+  });
+});
+
+describe("greekToEnglish", () => {
+  it("should convert Greek characters to English", () => {
+    expect(greekToEnglish("γειά σας")).toBe("geia sas");
+    expect(greekToEnglish("Καλημέρα")).toBe("kalimera");
+    expect(greekToEnglish("αγάπη")).toBe("agapi");
+    expect(greekToEnglish("1-2-98 ΛΟΚΑΤΖΗΔΕΣ")).toBe("1-2-98 lokatzides");
+    expect(greekToEnglish("ΑΓ,ΔΗΜΗΤΡΙΟΣ ΘΕΣΣΑΛΟΝΙΚΗ")).toBe("ag,dimitrios thessaloniki");
+    expect(greekToEnglish("Σχολείο Σημερα κ ΑυριΟ")).toBe("sxoleio simera k aurio");
+    expect(convgreekToEnglishertGreekToEnglish("Φιλοσοφία")).toBe("philosophia");
+  });
+
+  it("should handle non-Greek characters", () => {
+    expect(greekToEnglish("Hello")).toBe("hello");
+    expect(greekToEnglish("12345")).toBe("12345");
+    expect(greekToEnglish("")).toBe("");
+  });
+});
+
+describe("keepLatinOnly", () => {
+  it("should remove non-Latin characters and non-numbers", () => {
+    expect(keepLatinOnly("H3ll0, W0rld!")).toBe("H3ll0W0rld");
+    expect(keepLatinOnly("Thérè Àrè 123 çhäràctèrs")).toBe("ThreAre123charrctrs");
+    expect(keepLatinOnly("Special@Characters!$")).toBe("SpecialCharacters");
+  });
+
+  it("should handle an empty string", () => {
+    expect(keepLatinOnly("")).toBe("");
+  });
+
+  it("should handle a string with only non-Latin characters", () => {
+    expect(keepLatinOnly("Γειά σας")).toBe("");
+  });
+
+  it("should handle a string with only numbers", () => {
+    expect(keepLatinOnly("1234567890")).toBe("1234567890");
   });
 });

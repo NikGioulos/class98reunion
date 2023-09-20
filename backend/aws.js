@@ -2,7 +2,7 @@ const AWS = require("aws-sdk");
 const s3 = new AWS.S3();
 const multerS3 = require("multer-s3");
 
-const { replaceWhitespacesWithDash } = require("./tools.js");
+const { replaceWhitespacesWithDash, greekToEnglish, keepLatinOnly } = require("./tools.js");
 
 const S3_BUCKET_NAME = "cyclic-good-bee-underclothes-us-east-2";
 const S3_SERVER_NAME = `https://${S3_BUCKET_NAME}.s3.us-east-2.amazonaws.com/`;
@@ -14,7 +14,7 @@ function createStorageEngine() {
     bucket: S3_BUCKET_NAME,
     key: function (req, file, cb) {
       console.log("start file upload");
-      let key = `photos/${Date.now()}-${file.originalname}`;
+      let key = `photos/${Date.now()}-${keepLatinOnly(greekToEnglish(file.originalname))}`;
       if (req.body.lastName !== undefined) {
         // Replace whitespaces with dashes in the firstName & lastName before store them
         const formattedFirstName = replaceWhitespacesWithDash(req.body.firstName);
